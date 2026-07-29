@@ -379,7 +379,7 @@ que a própria SPEC dá para o número.
 | `/biblioteca/nao-existe-estrategia-de-ia` — HTML | 38,7 KiB *(a mais longa: ensaio real de ~1.900 palavras + referências)* |
 | item individual (as demais) — HTML | 28,1–28,6 KiB |
 | retrato (`src/assets/retrato.png` → WebP) | 39,6 KiB, 800×966 |
-| `/` — peso total transferido, cache vazio (Chromium via Playwright, §7.5 passo 7) | **188,5 KiB antes do retrato** — refazer a medição inclui a foto agora |
+| `/` — peso total transferido, cache vazio (Chromium via Playwright, §7.5 passo 7, medido no site publicado) | **228,2 KiB** — 6 requisições: HTML 9,9 · fontes 178,7 · retrato 39,6 |
 
 **Pronto quando:** `npm run test:dist` e `npm run test:perf` rodam e os números estão na tabela. Se estourar, reportar antes de mexer no limite.
 **Commit:** `—`
@@ -398,48 +398,50 @@ Build, testes e deploy: ver "Achados verificados" acima. Commit publicado: `a2a3
 Executado pela GitHub Action, não à mão — os números de `npm test` / `test:e2e` / `test:perf`
 já estão nas seções de Estágio 2–6.
 
-### §7.5 passos 5–8 — no site publicado, verificado em 2026-07-29
+### §7.5 passos 5–8 — no site publicado, verificado em 2026-07-29 (refeito com conteúdo real)
 
 Rodado com Chromium de verdade via Playwright contra
 `https://gmendonc.github.io/personal-site-giuliano/` — não `curl`: o navegador executa o JS
 de tema e de filtro, e a rede inteira foi capturada durante o fluxo.
 
-**Passo 5 — tema escuro sobrevive a três navegações.**
-Home → clique no botão de tema (`data-theme` vira `dark`) → clique em "Ver toda a
-biblioteca →" (`.../biblioteca/`, tema continua `dark`) → clique no chip "Ensaio" (contagem
-cai para "2 itens", todos os `<li>` visíveis com `data-tipo="ensaio"`) → clique no primeiro
-item (`.../biblioteca/nao-existe-estrategia-de-ia/`, `<h1>` bate com o título clicado, tema
-continua `dark`). **As três navegações mantiveram o tema. ✅**
+**Primeira rodada** (registrada abaixo do commit `a2a3b21`) usou a peça sintética
+`nao-existe-estrategia-de-ia`, com a ressalva explícita de que não era texto real. **Depois do
+commit `6f95222`**, que integra "Iniciando a jornada da IA" (o ensaio real do Giuliano) no
+mesmo slug, os passos 5–8 foram refeitos — desta vez sem ressalva.
 
-> Nota de honestidade: a peça aberta neste fluxo (`nao-existe-estrategia-de-ia`) é uma das
-> sete que eu escrevi a partir das teses do protótipo, não o texto real exportado do Obsidian
-> do Giuliano — essa decisão continua pendente, registrada na tabela abaixo.
+**Passo 5 — tema escuro sobrevive à navegação, e a peça aberta é a real.**
+Home → retrato carrega (`img.complete && naturalWidth > 0` ✅) → clique no botão de tema
+(`data-theme` vira `dark`) → clique em "Ver toda a biblioteca →" (`.../biblioteca/`, tema
+continua `dark`) → navegação direta a `.../biblioteca/nao-existe-estrategia-de-ia/` — `<h1>`
+é **"Iniciando a jornada da IA"** (confirmado, não é mais a versão sintética), com 4 links de
+referência na seção final, tema continua `dark`. **Tema sobrevive à navegação, e o conteúdo é
+o texto real. ✅**
 
 **Passo 6 — zero requisição a terceiro.**
-17 requisições capturadas ao longo do fluxo inteiro (home, alternância de tema, biblioteca,
-filtro, peça). Domínios vistos: **`{ "gmendonc.github.io" }`** — um só. **Zero terceiros. ✅**
+17 requisições capturadas ao longo do fluxo inteiro. Domínios vistos: **`{ "gmendonc.github.io" }`**
+— um só. **Zero terceiros. ✅**
 
-**Passo 7 — peso total transferido da home, cache vazio.**
-Contexto novo do Playwright (sem cache de disco compartilhado, equivalente a "recarregar com
-cache vazio"): **5 requisições, 188,5 KiB no total.**
+**Passo 7 — peso total transferido da home, cache vazio, com o retrato.**
+Contexto novo do Playwright (sem cache de disco compartilhado): **6 requisições, 228,2 KiB
+no total** — subiu de 188,5 KiB (medição anterior, sem foto) pelos 39,6 KiB do retrato.
 
 | recurso | KiB |
 | --- | --- |
-| HTML da home | 9,8 |
 | `newsreader-latin-wght-italic.woff2` | 63,0 |
 | `newsreader-latin-wght-normal.woff2` | 56,7 |
 | `ibm-plex-sans-latin-wght-normal.woff2` | 44,6 |
+| `_astro/retrato.….webp` | 39,6 |
 | `ibm-plex-mono-latin-400-normal.woff2` | 14,4 |
+| HTML da home | 9,9 |
 
-Sem limite a bater (§3.3) — linha de base para comparar depois. Bate com a soma já medida em
-`test:dist` (fontes 178,7 KiB + HTML ~9,8 KiB ≈ 188,5 KiB).
+Sem limite a bater (§3.3) — linha de base para comparar depois.
 
 **Passo 8 — botão de assinatura.**
 Clique em "Assinar no Substack →" abriu **nova aba** em
 `https://giulianomendonca.substack.com/`. **URL configurada, nova aba confirmada. ✅**
 
 **Pronto quando:** §7.5 passa no ar e o Revisor não reporta bloqueante.
-**Commit:** `a2a3b21`
+**Commit:** `6f95222`
 
 ---
 
