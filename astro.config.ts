@@ -2,8 +2,26 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import { SITE_URL } from './src/config';
 
+/**
+ * Subcaminho do GitHub Pages de projeto. Anda em par com SITE_URL
+ * (src/config.ts) — ver o comentário lá para o que fazer quando um domínio
+ * próprio existir.
+ *
+ * Testado localmente, não só em produção: o dev server, o `astro preview` e
+ * os testes e2e usam este mesmo `base`. A alternativa — deixar `base` só na
+ * config de CI — reproduziria a classe exata de bug que motivou esta mudança:
+ * funciona no preview local, quebra no ar.
+ *
+ * BARRA FINAL OBRIGATÓRIA. Sem ela, esta versão do Astro devolve
+ * `import.meta.env.BASE_URL` sem barra — e todo `${BASE_URL}biblioteca` no
+ * código vira `.../personal-site-giulianobiblioteca`, grudado. Visto
+ * quebrar, corrigido aqui: fonte única, sem precisar tratar em cada chamada.
+ */
+const BASE_PATH = '/personal-site-giuliano/';
+
 export default defineConfig({
   site: SITE_URL,
+  base: BASE_PATH,
   output: 'static',
   integrations: [sitemap()],
   markdown: {

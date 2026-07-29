@@ -1,6 +1,8 @@
 ---
 import Newsletter from './Newsletter.astro';
 import { NAVEGACAO, SITE_SUBTITULO } from '../config';
+
+const base = import.meta.env.BASE_URL;
 ---
 
 <footer class="rodape">
@@ -15,7 +17,7 @@ import { NAVEGACAO, SITE_SUBTITULO } from '../config';
         {
           NAVEGACAO.map((item) =>
             item.href ? (
-              <a href={item.href}>{item.rotulo}</a>
+              <a href={`${base}${item.href}`}>{item.rotulo}</a>
             ) : (
               <span aria-disabled="true">{item.rotulo}</span>
             ),
@@ -25,7 +27,7 @@ import { NAVEGACAO, SITE_SUBTITULO } from '../config';
 
       <div class="rodape-links">
         <a href="mailto:ola@giulianomendonca.com">E-mail</a>
-        <a href="/rss.xml">RSS</a>
+        <a href={`${base}rss.xml`}>RSS</a>
         {/* Sem URL de perfil conhecida, o item fica inerte em vez de apontar
             para lugar nenhum — mesma regra do menu (SPEC §5). */}
         <span aria-disabled="true">LinkedIn</span>

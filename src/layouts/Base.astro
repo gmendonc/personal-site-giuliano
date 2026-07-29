@@ -2,7 +2,7 @@
 import '../styles/global.css';
 import Cabecalho from '../components/Cabecalho.astro';
 import Rodape from '../components/Rodape.astro';
-import { SITE_TITULO, SITE_DESCRICAO, SITE_SUBTITULO, SITE_URL } from '../config';
+import { SITE_TITULO, SITE_DESCRICAO, SITE_SUBTITULO } from '../config';
 
 interface Props {
   titulo?: string;
@@ -12,7 +12,12 @@ interface Props {
 const { titulo, descricao = SITE_DESCRICAO } = Astro.props;
 
 const tituloCompleto = titulo ? `${titulo} — ${SITE_TITULO}` : `${SITE_TITULO} — ${SITE_SUBTITULO}`;
-const canonica = new URL(Astro.url.pathname, SITE_URL);
+
+/* Astro.url já reflete origem + base + caminho corretos num build estático
+   (construído a partir de `site` e `base` em astro.config.ts) — não precisa
+   ser remontado à mão com SITE_URL. Fazer isso à mão foi o que gerou o bug de
+   base path original: funcionava com o site na raiz e quebrou no subcaminho. */
+const canonica = Astro.url;
 ---
 
 <!doctype html>
@@ -24,7 +29,12 @@ const canonica = new URL(Astro.url.pathname, SITE_URL);
     <title>{tituloCompleto}</title>
     <meta name="description" content={descricao} />
     <link rel="canonical" href={canonica.href} />
-    <link rel="alternate" type="application/rss+xml" title={SITE_TITULO} href="/rss.xml" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={SITE_TITULO}
+      href={`${import.meta.env.BASE_URL}rss.xml`}
+    />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={SITE_TITULO} />
@@ -39,7 +49,7 @@ const canonica = new URL(Astro.url.pathname, SITE_URL);
       rel="preload"
       as="font"
       type="font/woff2"
-      href="/fontes/newsreader-latin-wght-normal.woff2"
+      href={`${import.meta.env.BASE_URL}fontes/newsreader-latin-wght-normal.woff2`}
       crossorigin
     />
 

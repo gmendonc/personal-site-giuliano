@@ -3,14 +3,14 @@ import { test, expect } from '@playwright/test';
 /** SPEC §7.4 — ponta a ponta. */
 
 test('a home tem exatamente um h1, com o título do protótipo', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('');
   const h1 = page.locator('h1');
   await expect(h1).toHaveCount(1);
   await expect(h1).toHaveText('Descomplicando a tecnologia');
 });
 
 test('a lista densa da home mostra 5 itens, em ordem de data decrescente', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('');
   const itens = page.locator('.lista-densa li');
 
   await expect(itens).toHaveCount(5);
@@ -23,10 +23,10 @@ test('a lista densa da home mostra 5 itens, em ordem de data decrescente', async
 });
 
 test('a home lista os mesmos 5 itens mais recentes que a biblioteca', async ({ page }) => {
-  await page.goto('/biblioteca');
+  await page.goto('biblioteca');
   const naBiblioteca = await page.locator('#lista li .item-titulo').allTextContents();
 
-  await page.goto('/');
+  await page.goto('');
   const naHome = await page.locator('.lista-densa li .item-titulo').allTextContents();
 
   expect(naHome).toEqual(naBiblioteca.slice(0, 5));
@@ -34,7 +34,7 @@ test('a home lista os mesmos 5 itens mais recentes que a biblioteca', async ({ p
 
 test.describe('/biblioteca', () => {
   test('a contagem exibida é igual ao número de li visíveis', async ({ page }) => {
-    await page.goto('/biblioteca');
+    await page.goto('biblioteca');
 
     const visiveis = await page.locator('#lista li:visible').count();
     const contagem = await page.locator('#contagem').textContent();
@@ -43,7 +43,7 @@ test.describe('/biblioteca', () => {
   });
 
   test('o chip Ensaio reduz a lista, e a contagem acompanha', async ({ page }) => {
-    await page.goto('/biblioteca');
+    await page.goto('biblioteca');
 
     const total = await page.locator('#lista li:visible').count();
     await page.locator('[data-filtro="ensaio"]').click();
@@ -64,7 +64,7 @@ test.describe('/biblioteca', () => {
   });
 
   test('o filtro sobrevive a um recarregamento com ?tipo= na URL', async ({ page }) => {
-    await page.goto('/biblioteca?tipo=ensaio');
+    await page.goto('biblioteca?tipo=ensaio');
 
     const tipos = await page
       .locator('#lista li:visible')
@@ -74,7 +74,7 @@ test.describe('/biblioteca', () => {
   });
 
   test('o chip Todos devolve a lista completa', async ({ page }) => {
-    await page.goto('/biblioteca?tipo=ensaio');
+    await page.goto('biblioteca?tipo=ensaio');
     const filtrados = await page.locator('#lista li:visible').count();
 
     await page.locator('[data-filtro="todos"]').click();
@@ -85,7 +85,7 @@ test.describe('/biblioteca', () => {
 });
 
 test('clicar no primeiro item leva à peça, e o h1 de lá é o título clicado', async ({ page }) => {
-  await page.goto('/biblioteca');
+  await page.goto('biblioteca');
 
   const primeiro = page.locator('#lista li').first();
   const titulo = (await primeiro.locator('.item-titulo').textContent())?.trim();
@@ -97,10 +97,10 @@ test('clicar no primeiro item leva à peça, e o h1 de lá é o título clicado'
 });
 
 test('/rss.xml é XML válido, com um item por peça publicada', async ({ page, request }) => {
-  await page.goto('/biblioteca');
+  await page.goto('biblioteca');
   const publicadas = await page.locator('#lista li').count();
 
-  const resposta = await request.get('/rss.xml');
+  const resposta = await request.get('rss.xml');
   expect(resposta.status()).toBe(200);
 
   const xml = await resposta.text();
@@ -116,18 +116,18 @@ test('peça marcada como rascunho não aparece, não entra no RSS e não gera ro
 }) => {
   const SLUG = 'tres-perguntas-antes-do-piloto';
 
-  await page.goto('/biblioteca');
+  await page.goto('biblioteca');
   await expect(page.locator(`#lista a[href*="${SLUG}"]`)).toHaveCount(0);
 
-  const rss = await (await request.get('/rss.xml')).text();
+  const rss = await (await request.get('rss.xml')).text();
   expect(rss).not.toContain(SLUG);
 
-  const rota = await request.get(`/biblioteca/${SLUG}`);
+  const rota = await request.get(`biblioteca/${SLUG}`);
   expect(rota.status()).toBe(404);
 });
 
 test('os itens de menu não implementados são visíveis e inertes', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('');
 
   for (const rotulo of ['Aparições', 'Sobre', 'Trabalhar comigo']) {
     const item = page.locator('.nav-item', { hasText: rotulo }).first();
@@ -138,14 +138,14 @@ test('os itens de menu não implementados são visíveis e inertes', async ({ pa
 });
 
 test('o botão de buscar do protótipo não existe nesta fatia', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('');
   await expect(page.getByRole('button', { name: /buscar/i })).toHaveCount(0);
 });
 
 test('o bloco de newsletter não menciona o provedor fora do próprio componente', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('');
 
   /* SPEC §6.1: nenhuma página menciona o provedor. Ele aparece só no rótulo do
      botão, que é renderizado por Newsletter.astro. */
@@ -159,7 +159,7 @@ test('o bloco de newsletter não menciona o provedor fora do próprio componente
 });
 
 test('o botão de assinatura abre a URL configurada em nova aba', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('');
 
   const botao = page.getByRole('link', { name: /Assinar/ }).first();
   await expect(botao).toHaveAttribute('target', '_blank');
@@ -168,14 +168,14 @@ test('o botão de assinatura abre a URL configurada em nova aba', async ({ page 
 });
 
 test('a contagem de leitores some enquanto for zero', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('');
   /* SPEC §6.2: não renderizar o placeholder "[N] leitores" do protótipo. */
   await expect(page.locator('.newsletter-leitores')).toHaveCount(0);
   await expect(page.getByText('[N] leitores')).toHaveCount(0);
 });
 
 test('o rodapé traz a declaração técnica corrigida, sem o número de kB', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('');
   const declaracao = page.locator('.rodape-declaracao');
 
   await expect(declaracao).toContainText('Nenhuma requisição a servidor de terceiros');
@@ -183,15 +183,18 @@ test('o rodapé traz a declaração técnica corrigida, sem o número de kB', as
 });
 
 test('a peça permanente aparece em Padrões nomeados', async ({ page }) => {
-  await page.goto('/biblioteca');
+  await page.goto('biblioteca');
 
   const chips = page.locator('.padrao-chip');
   await expect(chips).toHaveCount(1);
-  await expect(chips.first()).toHaveAttribute('href', '/biblioteca/quatro-frentes');
+  /* Regex, não string exata: o href leva o prefixo de base do GitHub Pages
+     (/personal-site-giuliano), e este teste não deveria conhecer esse
+     detalhe de deploy — só que a rota final está certa. */
+  await expect(chips.first()).toHaveAttribute('href', /\/biblioteca\/quatro-frentes$/);
 });
 
 test('/404 responde e traz saída para a biblioteca', async ({ page }) => {
-  const resposta = await page.goto('/rota-que-nao-existe');
+  const resposta = await page.goto('rota-que-nao-existe');
   expect(resposta?.status()).toBe(404);
   await expect(page.locator('h1')).toHaveText('Esta página não existe');
 });

@@ -82,6 +82,8 @@ const aparicoes = [
     disse: 'Governança de IA sem burocratizar a inovação: o paralelo com checklist de voo.',
   },
 ];
+
+const base = import.meta.env.BASE_URL;
 ---
 
 <Base>
@@ -143,7 +145,7 @@ const aparicoes = [
     <div class="comece-grade">
       {
         comecePorAqui.map((item) => (
-          <a class="comece-card" href="/biblioteca">
+          <a class="comece-card" href={`${base}biblioteca`}>
             <span class="comece-numero">{item.n}</span>
             <span>
               <span class="comece-titulo">“{item.titulo}”</span>
@@ -168,7 +170,7 @@ const aparicoes = [
     <div class="destaques-grade">
       {
         destaques.map((peca) => (
-          <a class="destaque-card" href={`/biblioteca/${peca.id}`}>
+          <a class="destaque-card" href={`${base}biblioteca/${peca.id}`}>
             <span class="destaque-capa placeholder">capa ilustrada própria · linha + aquarela</span>
             <span class="destaque-corpo">
               <span class="destaque-meta">
@@ -192,7 +194,7 @@ const aparicoes = [
       {listaDensa.map((peca) => <ItemLista peca={peca} />)}
     </ul>
     <p class="lista-densa-rodape">
-      <a class="link-mono" href="/biblioteca">Ver toda a biblioteca →</a>
+      <a class="link-mono" href={`${base}biblioteca`}>Ver toda a biblioteca →</a>
     </p>
   </section>
 
@@ -206,7 +208,7 @@ const aparicoes = [
             <p class="identidade-kicker">{id.kicker}</p>
             <h3 class="identidade-titulo">{id.titulo}</h3>
             <p class="identidade-desc">{id.desc}</p>
-            <a class="identidade-card" href="/biblioteca">
+            <a class="identidade-card" href={`${base}biblioteca`}>
               <span class="identidade-card-kind">{id.pecaTipo}</span>
               <span class="identidade-card-titulo">{id.pecaTitulo}</span>
               <span class="identidade-card-cta">{id.pecaCta} →</span>

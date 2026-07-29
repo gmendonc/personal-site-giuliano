@@ -69,8 +69,9 @@ const PADROES_RECURSO = [
 const EXTERNO = /^(?:https?:)?\/\//i;
 
 /* A origem do próprio site aparece legitimamente em canonical, og:url e no
-   feed. Não é terceiro — é declaração de identidade. */
-const ORIGEM_PROPRIA = /^https:\/\/giulianomendonca\.com/;
+   feed. Não é terceiro — é declaração de identidade. Precisa bater com
+   SITE_URL em src/config.ts — os dois mudam juntos. */
+const ORIGEM_PROPRIA = /^https:\/\/gmendonc\.github\.io/;
 
 const linksExternos = new Set();
 

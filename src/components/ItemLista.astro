@@ -37,7 +37,7 @@ const titulo = peca.data.atualizado
 ---
 
 <li class="item" data-tipo={peca.data.tipo}>
-  <a class="item-link" href={`/biblioteca/${peca.id}`}>
+  <a class="item-link" href={`${import.meta.env.BASE_URL}biblioteca/${peca.id}`}>
     <span class="item-meta">
       <time class="item-data" datetime={peca.data.data.toISOString()} title={titulo}>
         {formatarData(peca.data.data)}

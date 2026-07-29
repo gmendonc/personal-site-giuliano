@@ -16,7 +16,9 @@ import lighthouse from 'lighthouse';
 import * as chromeLauncher from 'chrome-launcher';
 
 const PORTA = 4321;
-const BASE = `http://localhost:${PORTA}`;
+/* `astro preview` só serve sob o `base` do astro.config.ts — ver o mesmo
+   comentário em playwright.config.ts. */
+const BASE = `http://localhost:${PORTA}/personal-site-giuliano`;
 const DIST = join(process.cwd(), 'dist');
 
 const ROTAS = ['/', '/biblioteca', '/biblioteca/nao-existe-estrategia-de-ia'];
@@ -81,7 +83,8 @@ process.on('SIGINT', () => {
   process.exit(130);
 });
 
-await esperarServidor(BASE);
+/* Sem a barra final aqui dá 404 — o preview server não redireciona. */
+await esperarServidor(`${BASE}/`);
 
 const chrome = await chromeLauncher.launch({
   chromeFlags: ['--headless=new', '--no-sandbox', '--disable-gpu'],

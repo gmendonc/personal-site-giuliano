@@ -4,13 +4,12 @@ Sequenciamento e estado. O **o quê** está na [SPEC.md](SPEC.md); aqui fica o *
 
 Regra: um estágio por vez, commit ao fim de cada um, e este arquivo atualizado antes do commit. Sessão nova começa lendo `SPEC.md` e depois este arquivo.
 
-**Estado:** estágios 1–6 completos e verdes na raiz · falta commit e §7.5 (deploy) · **Atualizado em:** 2026-07-29
+**Estado:** commit `3ed46fe` no ar; deploy falhou por Pages não habilitado (corrigido) e por bug de
+base path (corrigido localmente, aguardando novo push) · **Atualizado em:** 2026-07-29
 
 ---
 
 ## ⚠️ Leia isto antes de qualquer coisa
-
-**A fatia está implementada, promovida para a raiz, e reverificada lá. Nada foi commitado ainda.**
 
 Histórico da sessão, para quem chegar depois: o agente não tinha permissão para apagar a
 árvore do AstroWind sozinho (o classificador recusou três tentativas), então o projeto foi
@@ -18,27 +17,59 @@ construído em `_novo/` primeiro. O Giuliano rodou a remoção manualmente. A pr
 (`_novo/*` → raiz) foi feita com `find _novo -mindepth 1 -maxdepth 1 -exec mv {} .` — **não**
 `shopt -s dotglob`, que é bashismo e falha em zsh, o shell deste ambiente.
 
-Depois da promoção, `npm run build`, `check`, `npm test` (39), `npm run test:dist` e
-`npm run test:e2e` (68) rodaram de novo a partir da raiz — todos verdes, mesmos números da
-tabela de §7.3 mais abaixo.
+Commit `3ed46fe` foi feito e enviado (`git push`). A Action rodou: o job `verificar` passou
+inteiro (build, check, lint, 39 unitários, `test:dist`, 68 e2e — tudo no CI, não só local). O
+job `publicar` falhou com 404 — GitHub Pages não estava habilitado no repositório. Corrigido
+pelo Giuliano em Settings → Pages → Source → GitHub Actions.
 
-`git status` mostra isto, e é o esperado:
+### Bug real encontrado ao investigar antes de re-rodar
 
-| categoria | contagem | por quê |
-| --- | --- | --- |
-| deletados | 132 | AstroWind, removido no estágio 1 |
-| modificados | 11 | arquivos novos cujo nome colide com o do AstroWind (`package.json`, `astro.config.ts`, `README.md`, `.gitignore`, `tsconfig.json`, `eslint.config.js`, `package-lock.json`, mais `src/content/config.ts`, `src/pages/404.astro`, `src/pages/index.astro`, `src/pages/rss.xml.ts` — que também existiam como demo do template) |
-| novos | 56 | o resto do projeto |
+Antes de simplesmente re-rodar o job, chequei `gh api repos/.../pages` e confirmei
+`cname: null` — o site não tem domínio próprio; está publicado como Pages de **projeto**, em
+`https://gmendonc.github.io/personal-site-giuliano/`. Todo o código (SPEC e implementação)
+assumia site na raiz de um domínio: `href="/biblioteca"`, `SITE_URL` placeholder em
+`giulianomendonca.com`, `astro.config.ts` sem `base`. Publicado assim, a navegação inteira
+quebraria — link do menu levaria para `gmendonc.github.io/biblioteca` (404), não para
+`gmendonc.github.io/personal-site-giuliano/biblioteca`.
 
-`node_modules/`, `dist/`, `.astro/`, `public/fontes/`, `test-results/` não aparecem — o
-`.gitignore` está funcionando.
+Corrigido antes de re-rodar, não depois: `base: '/personal-site-giuliano/'` em
+`astro.config.ts`, `SITE_URL` agora é só a origem (`https://gmendonc.github.io`), e todo
+`href`/`src`/`url()` que era absoluto de raiz (11 em `.astro`, 2 em `config.ts`/script de
+filtro, 4 em `fontes.css`) passou a usar `import.meta.env.BASE_URL` — ou, dentro do `<script>`
+que roda no navegador, um atributo `data-base` (mais garantido que confiar em substituição de
+`import.meta.env` dentro de script de cliente).
 
-**Próximo passo:** revisar o diff e commitar. Depois disso, `npm run build` local não é mais
-o critério — o §7.5 pede o site **publicado**.
+**Armadilha encontrada:** `import.meta.env.BASE_URL` só sai com barra final se `base` for
+configurado **com** barra final (`/personal-site-giuliano/`, não `/personal-site-giuliano`).
+Sem isso, `${BASE_URL}biblioteca` virava `.../personal-site-giulianobiblioteca`, grudado — visto
+quebrar antes de corrigir.
+
+**Efeito em ferramenta local:** com `base` configurado, `astro preview` só serve sob esse
+subcaminho (`curl localhost:4321/` → 404; `curl localhost:4321/personal-site-giuliano/` → 200).
+Isso quebrava `playwright.config.ts` (baseURL) e os ~30 `page.goto('/…')` nos specs e2e, e
+`scripts/lighthouse.mjs`. Todos corrigidos: `baseURL` agora inclui o subcaminho, e todo
+`goto()` usa caminho relativo sem barra inicial (`goto('biblioteca')`, não
+`goto('/biblioteca')`) — com barra inicial, a resolução de URL descarta o subcaminho do
+`baseURL` e volta pra raiz do domínio, o mesmo bug, agora nos testes.
+
+Depois da correção: build, check, lint, 39 unitários, 68 e2e (incluindo os 9 de
+acessibilidade rodados à parte para conferir) e Lighthouse — todos verdes de novo, local,
+contra o subcaminho correto. Números de Lighthouse idênticos aos de antes da mudança
+(Perf 99 · LCP 1804–1955 ms · CLS 0 · TBT 0 · A11y 95/100/100) — o `base` não custou
+performance.
+
+**Pendente:** 17 arquivos modificados desde o commit `3ed46fe`, ainda não commitados nem
+enviados. Depois do push, re-rodar o job `publicar` (não precisa de outro push só pra isso,
+mas como o conteúdo do artefato mudou, precisa de um novo `verificar` + `publicar` — ou seja,
+precisa mesmo de push).
 
 > **Lição registrada:** uma sessão anterior construiu tudo isto num diretório temporário fora
 > do repositório, e ele foi apagado entre sessões — o trabalho se perdeu inteiro. Não use
 > `/tmp` nem scratchpad para trabalho de projeto. Escreva no repo.
+>
+> **Segunda lição:** "funciona no `npm run build` local" não prova que funciona publicado,
+> quando o local e o publicado servem de raízes diferentes. `base` devia ter sido decidido
+> (e testado localmente) antes do primeiro push, não descoberto depois pela falha do deploy.
 
 ---
 
@@ -289,10 +320,10 @@ que a própria SPEC dá para o número.
 
 | Medida | Real |
 | --- | --- |
-| CSS+JS compartilhado em `dist/` | 25,4 KiB *(antes de virar inline)* |
-| `/` — HTML | 21,0 KiB |
-| `/biblioteca` — HTML | 16,7 KiB |
-| item individual — HTML | 11,0–11,5 KiB |
+| CSS+JS compartilhado em `dist/` | 0 KiB — Vite decidiu inlinar os `<script>` de tema/filtro em cada página, em vez de extrair chunk compartilhado. Não investigado a fundo: não é portão, e não achei indício de que a mudança de `base` tenha causado isso |
+| `/` — HTML | 47,1 KiB *(subiu de 21,0 KiB pelo motivo acima — script duplicado por página, não CSS)* |
+| `/biblioteca` — HTML | 34,3 KiB |
+| item individual — HTML | 28,1–28,6 KiB |
 | `/` — peso total transferido, cache vazio (§7.5 passo 7) | — *(exige o site publicado)* |
 
 **Pronto quando:** `npm run test:dist` e `npm run test:perf` rodam e os números estão na tabela. Se estourar, reportar antes de mexer no limite.
@@ -341,5 +372,5 @@ Registre aqui o que foi implementado diferente do que a spec pede, e por quê. S
 | Itálico do Newsreader custa 64,5 kB (35% do orçamento de fonte) para o wordmark. Cabe, mas é o primeiro corte se algo entrar | SPEC §2.1.1 | mantido |
 | ~~Cortar IBM Plex Mono~~ — desnecessário: com subset `latin` o total fica em 178,7 kB, dentro dos 200 kB | SPEC §7.3.3 | **resolvido** |
 | URL real da publicação no Substack | SPEC §6.1 | placeholder `giulianomendonca.substack.com` |
-| Domínio de publicação. Assumido `giulianomendonca.com` (vem do e-mail do protótipo). Se for `gmendonc.github.io/site-pessoal`, mudar `SITE_URL` **e** acrescentar `base` no `astro.config.ts` | SPEC §7.5 passo 4 | **pendente** |
+| Domínio de publicação. **Resolvido para agora:** confirmado via API que não há domínio próprio (`cname: null`); site publicado em `gmendonc.github.io/personal-site-giuliano/`, `SITE_URL` e `base` já ajustados para isso. Se um domínio próprio for anexado depois, os dois voltam — `SITE_URL` vira o domínio, `base` vira `/`, e `src/styles/fontes.css` precisa de edição manual (não lê `BASE_URL`) | SPEC §7.5 passo 4 | resolvido para o estado atual; decisão de domínio próprio continua aberta |
 | Texto real exportado do Obsidian para pelo menos uma peça (§4.3). O agente não tem acesso ao vault; as peças atuais derivam das teses do protótipo | SPEC §4.3 | **pendente — só o Giuliano pode fazer** |

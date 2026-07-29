@@ -18,6 +18,8 @@ const chips = [
    está marcado como permanente no frontmatter (SPEC §4.4). */
 const permanentes = pecas.filter((peca) => peca.data.permanente);
 const iconePermanente = TIPOS.padrao.icone;
+
+const base = import.meta.env.BASE_URL;
 ---
 
 <Base
@@ -40,7 +42,7 @@ const iconePermanente = TIPOS.padrao.icone;
       {
         chips.map((chip) => (
           <Tag
-            href={chip.chave === 'todos' ? '/biblioteca' : `/biblioteca?tipo=${chip.chave}`}
+            href={chip.chave === 'todos' ? `${base}biblioteca` : `${base}biblioteca?tipo=${chip.chave}`}
             data-filtro={chip.chave}
             ativo={chip.chave === 'todos'}
           >
@@ -54,7 +56,7 @@ const iconePermanente = TIPOS.padrao.icone;
       {pecas.length}{pecas.length === 1 ? ' item' : ' itens'}
     </p>
 
-    <ul class="lista-densa" id="lista">
+    <ul class="lista-densa" id="lista" data-base={base}>
       {pecas.map((peca) => <ItemLista peca={peca} mostrarResumo />)}
     </ul>
 
@@ -68,7 +70,7 @@ const iconePermanente = TIPOS.padrao.icone;
           </p>
           <div class="padroes-lista">
             {permanentes.map((peca) => (
-              <a class="padrao-chip" href={`/biblioteca/${peca.id}`}>
+              <a class="padrao-chip" href={`${base}biblioteca/${peca.id}`}>
                 <span aria-hidden="true">{iconePermanente}</span> {peca.data.titulo}
               </a>
             ))}
@@ -86,6 +88,11 @@ const iconePermanente = TIPOS.padrao.icone;
   const lista = document.getElementById('lista');
   const contagem = document.getElementById('contagem');
   const chips = document.querySelectorAll<HTMLAnchorElement>('[data-filtro]');
+
+  /* O caminho base vem de data-base, não de import.meta.env.BASE_URL — este
+     script roda no navegador, e ler a config de build por atributo é
+     garantido, em vez de depender de como o Astro processa <script>. */
+  const base = lista?.dataset.base ?? '/';
 
   function aplicar(tipo: string) {
     const itens = lista?.querySelectorAll<HTMLLIElement>('li[data-tipo]') ?? [];
@@ -112,7 +119,11 @@ const iconePermanente = TIPOS.padrao.icone;
     chip.addEventListener('click', (evento) => {
       evento.preventDefault();
       const tipo = chip.dataset.filtro ?? 'todos';
-      history.replaceState(null, '', tipo === 'todos' ? '/biblioteca' : `/biblioteca?tipo=${tipo}`);
+      history.replaceState(
+        null,
+        '',
+        tipo === 'todos' ? `${base}biblioteca` : `${base}biblioteca?tipo=${tipo}`,
+      );
       aplicar(tipo);
     });
   });

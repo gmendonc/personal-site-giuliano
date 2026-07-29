@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 /** SPEC §7.3.2 — responsivo, medido em quatro larguras. */
 
 const LARGURAS = [375, 768, 1024, 1440];
-const ROTAS = ['/', '/biblioteca', '/biblioteca/nao-existe-estrategia-de-ia'];
+const ROTAS = ['', 'biblioteca', 'biblioteca/nao-existe-estrategia-de-ia'];
 
 for (const largura of LARGURAS) {
   for (const rota of ROTAS) {
@@ -113,7 +113,7 @@ test.describe('375px — regras específicas de mobile', () => {
   }
 
   test('/biblioteca · a lista densa vira duas linhas', async ({ page }) => {
-    await page.goto('/biblioteca');
+    await page.goto('biblioteca');
 
     /* Título em cima, metadados embaixo: o corpo começa acima da linha de
        metadados (SPEC §5.5). */

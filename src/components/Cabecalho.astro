@@ -10,11 +10,12 @@ import { NAVEGACAO } from '../config';
  * inertes: link para 404 é pior que link inerte (SPEC §5).
  */
 const caminho = Astro.url.pathname;
+const base = import.meta.env.BASE_URL;
 ---
 
 <header class="cabecalho">
   <div class="container cabecalho-interno">
-    <a class="wordmark" href="/">Giuliano <em>Mendonça</em></a>
+    <a class="wordmark" href={base}>Giuliano <em>Mendonça</em></a>
 
     <nav class="nav" aria-label="Principal">
       {
@@ -22,8 +23,8 @@ const caminho = Astro.url.pathname;
           item.href ? (
             <a
               class="nav-item"
-              href={item.href}
-              aria-current={caminho.startsWith(item.href) ? 'page' : undefined}
+              href={`${base}${item.href}`}
+              aria-current={caminho.startsWith(`${base}${item.href}`) ? 'page' : undefined}
             >
               {item.rotulo}
             </a>

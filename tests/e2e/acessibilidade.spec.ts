@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 
 /** SPEC §7.3.4 — acessibilidade. */
 
-const ROTAS = ['/', '/biblioteca', '/biblioteca/nao-existe-estrategia-de-ia'];
+const ROTAS = ['', 'biblioteca', 'biblioteca/nao-existe-estrategia-de-ia'];
 
 /**
  * FALHA CONHECIDA E DOCUMENTADA — SPEC §3.4 e §7.3.4.
@@ -77,7 +77,7 @@ test('Tab alcança botão de tema, chips de filtro e itens da lista, com foco vi
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto('/biblioteca');
+  await page.goto('biblioteca');
 
   const alcancados: string[] = [];
 
@@ -108,7 +108,7 @@ test('Tab alcança botão de tema, chips de filtro e itens da lista, com foco vi
 });
 
 test('o link de pular para o conteúdo é o primeiro alvo de Tab', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('');
   await page.keyboard.press('Tab');
 
   const classe = await page.evaluate(() => document.activeElement?.className ?? '');
@@ -116,7 +116,7 @@ test('o link de pular para o conteúdo é o primeiro alvo de Tab', async ({ page
 });
 
 test('o ícone de formato é decorativo, e o rótulo textual acompanha', async ({ page }) => {
-  await page.goto('/biblioteca');
+  await page.goto('biblioteca');
 
   /* O ícone não deve ser lido pelo leitor de tela — quem carrega o significado
      é o rótulo em .item-tipo, que fica ao lado. */

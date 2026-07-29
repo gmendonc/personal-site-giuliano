@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Alternância de tema', () => {
   test('alterna, persiste no recarregamento, e volta ao claro', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('');
     const raiz = page.locator('html');
     const botao = page.getByRole('button', { name: 'Alternar tema' });
 
@@ -25,7 +25,7 @@ test.describe('Alternância de tema', () => {
   });
 
   test('o tema escuro sobrevive à navegação entre páginas', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('');
     await page.getByRole('button', { name: 'Alternar tema' }).click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 
@@ -39,7 +39,7 @@ test.describe('Alternância de tema', () => {
   });
 
   test('o rótulo do botão acompanha o tema', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('');
 
     /* Os dois rótulos existem no DOM; quem troca é o CSS, para o texto já sair
        certo no primeiro paint. Então o teste olha visibilidade, não
@@ -61,12 +61,12 @@ test.describe('Preferência do sistema', () => {
   test.use({ colorScheme: 'dark' });
 
   test('com localStorage vazio e prefers-color-scheme dark, abre escura', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   });
 
   test('localStorage vence a preferência do sistema', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('');
     await page.evaluate(() => localStorage.setItem('tema', 'light'));
     await page.reload();
     await expect(page.locator('html')).not.toHaveAttribute('data-theme', 'dark');
@@ -90,7 +90,7 @@ test.describe('Sem flash', () => {
       });
     });
 
-    await page.goto('/', { waitUntil: 'load' });
+    await page.goto('', { waitUntil: 'load' });
 
     const noDCL = await page.evaluate(
       () => (window as unknown as { __temaNoDCL: string | null }).__temaNoDCL,
@@ -103,7 +103,7 @@ test.describe('Sem flash', () => {
     /* Um <script src> com defer só roda depois do parsing, e aí a página já
        pintou clara. A garantia de ausência de flash depende de o script ser
        inline e síncrono, dentro do <head>. */
-    await page.goto('/');
+    await page.goto('');
 
     const inline = await page.evaluate(() =>
       [...document.head.querySelectorAll('script')].some(
