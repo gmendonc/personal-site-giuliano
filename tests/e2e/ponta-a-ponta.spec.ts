@@ -108,6 +108,19 @@ test('/rss.xml é XML válido, com um item por peça publicada', async ({ page, 
   expect(xml).toContain('<rss');
 
   expect(xml.match(/<item>/g) ?? []).toHaveLength(publicadas);
+
+  /* Os <link> do RSS precisam levar o subcaminho de base do GitHub Pages, não
+     só a origem. Esta checagem pegou um bug real: rss.xml.ts é .ts, não
+     .astro, e escapou do refactor de base path — o link saía para
+     gmendonc.github.io/biblioteca/… em vez de …/personal-site-giuliano/biblioteca/…
+     Só contar <item> não pegava isso; é preciso olhar o conteúdo do link. */
+  const links = [...xml.matchAll(/<link>([^<]+)<\/link>/g)].map((m) => m[1]);
+  expect(links.length).toBeGreaterThan(0);
+  for (const link of links) {
+    expect(link, `link do RSS sem o subcaminho de base: ${link}`).toContain(
+      '/personal-site-giuliano/',
+    );
+  }
 });
 
 test('peça marcada como rascunho não aparece, não entra no RSS e não gera rota', async ({

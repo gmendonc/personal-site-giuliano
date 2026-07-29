@@ -69,10 +69,12 @@ test.describe('375px — regras específicas de mobile', () => {
           .filter((el) => {
             const r = el.getBoundingClientRect();
             if (r.width === 0 && r.height === 0) return false;
-            /* Links dentro de parágrafo de prosa são texto corrido, não alvo
-               isolado; o link de pular conteúdo fica fora da tela até receber
-               foco. */
-            if (el.closest('.prosa p')) return false;
+            /* Links dentro de prosa — parágrafo ou item de lista — são texto
+               corrido, não alvo isolado. A seção "Referências" de uma peça
+               real linka citações dentro de <li>, não de <p>, e a mesma regra
+               vale: é texto que se lê e clica em linha, não um botão. O link
+               de pular conteúdo fica fora da tela até receber foco. */
+            if (el.closest('.prosa p, .prosa li')) return false;
             if (el.classList.contains('pular-para-conteudo')) return false;
             return r.height < 44;
           })

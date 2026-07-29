@@ -1,4 +1,5 @@
 ---
+import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Newsletter from '../components/Newsletter.astro';
 import ItemLista from '../components/ItemLista.astro';
@@ -6,6 +7,7 @@ import Badge from '../components/Badge.astro';
 import { pecasPublicadas } from '../lib/biblioteca';
 import { TIPOS } from '../content/tipos';
 import { formatarData } from '../lib/datas';
+import retrato from '../assets/retrato.png';
 
 /**
  * As seções desta página são markup inline, não componentes — de propósito.
@@ -123,9 +125,20 @@ const base = import.meta.env.BASE_URL;
     </div>
 
     <div>
-      {/* Não há foto ainda. Placeholder, e nunca foto de banco (SPEC §5.1). */}
-      <div class="hero-retrato placeholder">retrato 4:5</div>
-      <p class="hero-retrato-nota">[retrato único — foto profissional dirigida, não stock]</p>
+      {/* Retrato real, processado por astro:assets (SPEC §7.3.3): sai em WebP,
+          leva width/height no HTML — a caixa em --aspect-ratio: 4/5 já reserva
+          o espaço, e width/height evita CLS mesmo antes da caixa existir. */}
+      <div class="hero-retrato">
+        <Image
+          src={retrato}
+          alt="Retrato de Giuliano Mendonça"
+          width={800}
+          format="webp"
+          quality={80}
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
     </div>
   </section>
 
@@ -321,14 +334,17 @@ const base = import.meta.env.BASE_URL;
   .hero-retrato {
     aspect-ratio: 4 / 5;
     border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: var(--border-width) solid var(--border);
   }
 
-  .hero-retrato-nota {
-    font-family: var(--font-mono);
-    font-size: var(--text-2xs);
-    line-height: var(--lh-body);
-    color: var(--text-subtle);
-    margin: var(--space-3) 0 0;
+  /* A imagem de origem é 928×1120 (0,829), a caixa é 4:5 (0,8) — quase igual,
+     mas não exata. object-fit: cover absorve a diferença sem distorcer. */
+  .hero-retrato :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
   /* ============ Comece por aqui ============ */

@@ -131,11 +131,13 @@ for (const arquivo of arquivos) {
 /* ---------- 3. Orçamento de imagem ---------- */
 
 const imagensPorPagina = new Map();
+const imagensDetalhe = [];
 
 for (const arquivo of arquivos) {
   if (!EXT_IMAGEM.has(extname(arquivo))) continue;
 
   const { size } = await stat(arquivo);
+  imagensDetalhe.push([relative(DIST, arquivo), size]);
 
   if (size > LIMITE_IMAGEM) {
     falhas.push(`imagem acima de 200 kB: ${relative(DIST, arquivo)} — ${kib(size)}`);
@@ -143,6 +145,10 @@ for (const arquivo of arquivos) {
 
   const pagina = dirname(relative(DIST, arquivo));
   imagensPorPagina.set(pagina, (imagensPorPagina.get(pagina) ?? 0) + size);
+}
+
+for (const [nome, size] of imagensDetalhe.sort((a, b) => b[1] - a[1])) {
+  notas.push(`imagem ${kib(size).padStart(10)}  ${nome} (limite: 200 kB por imagem, 500 kB por página)`);
 }
 
 for (const [pagina, total] of imagensPorPagina) {

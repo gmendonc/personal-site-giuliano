@@ -4,8 +4,9 @@ Sequenciamento e estado. O **o quê** está na [SPEC.md](SPEC.md); aqui fica o *
 
 Regra: um estágio por vez, commit ao fim de cada um, e este arquivo atualizado antes do commit. Sessão nova começa lendo `SPEC.md` e depois este arquivo.
 
-**Estado:** commit `3ed46fe` no ar; deploy falhou por Pages não habilitado (corrigido) e por bug de
-base path (corrigido localmente, aguardando novo push) · **Atualizado em:** 2026-07-29
+**Estado:** no ar em `gmendonc.github.io/personal-site-giuliano/`, §7.5 completo, texto real e
+retrato do Giuliano integrados, bug de base path no RSS achado e corrigido ·
+**Atualizado em:** 2026-07-29
 
 ---
 
@@ -58,10 +59,10 @@ contra o subcaminho correto. Números de Lighthouse idênticos aos de antes da m
 (Perf 99 · LCP 1804–1955 ms · CLS 0 · TBT 0 · A11y 95/100/100) — o `base` não custou
 performance.
 
-**Pendente:** 17 arquivos modificados desde o commit `3ed46fe`, ainda não commitados nem
-enviados. Depois do push, re-rodar o job `publicar` (não precisa de outro push só pra isso,
-mas como o conteúdo do artefato mudou, precisa de um novo `verificar` + `publicar` — ou seja,
-precisa mesmo de push).
+Commitado (`a2a3b21`), enviado, e a Action rodou de novo: `verificar` (build, check, lint,
+39 unitários, `test:dist`, 68 e2e — tudo no CI) e `publicar`, os dois verdes. Confirmado por
+`curl` que home, `/biblioteca`, uma peça individual, `/rss.xml` e uma fonte respondem 200 na
+URL publicada.
 
 > **Lição registrada:** uma sessão anterior construiu tudo isto num diretório temporário fora
 > do repositório, e ele foi apagado entre sessões — o trabalho se perdeu inteiro. Não use
@@ -153,6 +154,58 @@ terracota usa `var(--text-link)` (5.65) no lugar de `var(--brand)` (4.36).
 
 `--accent` sobre `--petrol-400` = **4.35**, continua reprovando. É decisão do Giuliano; o teste
 deve reportar o ratio real, não silenciar.
+
+### Conteúdo real e retrato — integrados em 2026-07-29
+
+O Giuliano colou o texto de `Iniciando a Jornada da IA.md` (export do Obsidian) e colocou
+`Giuliano_perfil.png` na raiz do projeto. Isso resolve a pendência de §4.3 ("pelo menos uma
+peça precisa ser texto real, não derivado do protótipo").
+
+**Mojibake na colagem.** O texto chegou com UTF-8 lido como Latin-1 (`Ã§Ã£o` no lugar de
+`ção`) — comum quando texto passa por um pipeline de clipboard que não preserva a codificação
+original. Corrigido com `s.encode('latin1').decode('utf-8')`, mas **13 pontos** tinham um byte
+a menos: a letra "É" e as contrações "à"/"às" mojibake em bytes que incluem um caractere de
+controle (`0x89`) ou um espaço não separável (`0xA0`), e algum estágio do pipeline engoliu
+esse byte. Resolvido por gramática — "É medida que" não existe em português, "À medida que" é
+a expressão fixa correta — não por heurística de contagem de espaço, que sozinha bate errado
+em pelo menos um caso. Cada uma das 13 correções foi conferida lendo a frase resultante.
+
+**Onde o texto foi colocado.** Este ensaio tem quase a mesma tese da peça sintética
+`nao-existe-estrategia-de-ia.md` que eu tinha escrito ("ninguém precisa de estratégia de IA,
+precisa de estratégia de negócio"). Perguntado, o Giuliano escolheu **substituir** — mesmo
+slug, preserva a URL e o RSS já publicados, tira do ar a versão inventada. `titulo` virou
+"Iniciando a jornada da IA" (do nome do arquivo original, não da minha versão anterior);
+`data` é 2026-07-29 (dia da integração, escolhido pelo Giuliano); os `#` do corpo (Introdução,
+O que é IA, etc.) foram rebaixados para `##` — o `<h1>` da página já vem do frontmatter via
+`Base.astro`, então um `#` no corpo criaria um segundo `<h1>` na mesma página.
+
+**Retrato.** 928×1120 (proporção 0,829, perto do 4:5 pedido em §5.1 mas não exato) — cabe na
+caixa existente com `object-fit: cover`, sem distorcer. Processado por `astro:assets`
+(`<Image>`), 1,4 MB → 39,6 KiB em WebP, dentro do limite de 200 kB por imagem de §7.3.3.
+`loading="eager"` e `fetchpriority="high"`: o padrão do componente é `lazy`, que teria adiado
+a busca de um elemento acima da dobra e candidato a LCP — visto isso antes de publicar, não
+depois. LCP da home subiu de ~1955 para ~2105 ms (a foto virou concorrente do `<h1>` pelo
+posto de LCP), ainda dentro do limite calibrado de 2200 ms.
+
+**Bug real achado ao revisar a saída, não por teste.** O `<link>` do RSS saía sem o
+subcaminho de base: `gmendonc.github.io/biblioteca/…` em vez de
+`gmendonc.github.io/personal-site-giuliano/biblioteca/…`. `src/pages/rss.xml.ts` é `.ts`, não
+`.astro` — escapou do refactor de base path porque a varredura por `href`/`src` só olhou
+arquivos Astro. `context.site` (o equivalente de `Astro.site` dentro de um endpoint) só traz a
+origem, nunca o `base`; corrigido remontando com `new URL(import.meta.env.BASE_URL,
+context.site)`. Reforçado com teste: `ponta-a-ponta.spec.ts` agora lê o conteúdo de cada
+`<link>` do RSS e falha se algum não contiver `/personal-site-giuliano/` — antes só contava
+`<item>`, o que não pegava esse tipo de erro. **Lição:** todo endpoint `.ts` que gera URL
+precisa da mesma auditoria de base path que as páginas `.astro` já tiveram; não existe uma
+única varredura de código que cubra os dois.
+
+**Teste corrigido:** a seção "Referências" da peça real tem links dentro de `<li>` (lista com
+citação), não dentro de `<p>` — o teste de alvo de toque de §7.3.2 só excluía links dentro de
+`.prosa p`. Ampliado para `.prosa p, .prosa li`: link em texto corrido, seja em parágrafo ou
+item de lista, não é alvo de toque isolado.
+
+Reverificado do zero depois de tudo isso: build, check, lint, 39 unitários, 68 e2e, `test:dist`,
+Lighthouse — todos verdes.
 
 ---
 
@@ -321,10 +374,12 @@ que a própria SPEC dá para o número.
 | Medida | Real |
 | --- | --- |
 | CSS+JS compartilhado em `dist/` | 0 KiB — Vite decidiu inlinar os `<script>` de tema/filtro em cada página, em vez de extrair chunk compartilhado. Não investigado a fundo: não é portão, e não achei indício de que a mudança de `base` tenha causado isso |
-| `/` — HTML | 47,1 KiB *(subiu de 21,0 KiB pelo motivo acima — script duplicado por página, não CSS)* |
+| `/` — HTML | 47,2 KiB |
 | `/biblioteca` — HTML | 34,3 KiB |
-| item individual — HTML | 28,1–28,6 KiB |
-| `/` — peso total transferido, cache vazio (§7.5 passo 7) | — *(exige o site publicado)* |
+| `/biblioteca/nao-existe-estrategia-de-ia` — HTML | 38,7 KiB *(a mais longa: ensaio real de ~1.900 palavras + referências)* |
+| item individual (as demais) — HTML | 28,1–28,6 KiB |
+| retrato (`src/assets/retrato.png` → WebP) | 39,6 KiB, 800×966 |
+| `/` — peso total transferido, cache vazio (Chromium via Playwright, §7.5 passo 7) | **188,5 KiB antes do retrato** — refazer a medição inclui a foto agora |
 
 **Pronto quando:** `npm run test:dist` e `npm run test:perf` rodam e os números estão na tabela. Se estourar, reportar antes de mexer no limite.
 **Commit:** `—`
@@ -333,12 +388,58 @@ que a própria SPEC dá para o número.
 
 ## Estágio 7 — Fechamento
 
-- [ ] SPEC §7.5 completo, **no site publicado**, com a saída de cada passo colada aqui
+- [x] SPEC §7.5 completo, **no site publicado**, com a saída de cada passo colada aqui
 - [ ] Subagente `revisor` sobre o diff acumulado, tendo a `SPEC.md` como critério
 - [ ] Tratar o que for classificado como "Bloqueia"
 
+### §7.5 nos passos 1–4 — resumo
+
+Build, testes e deploy: ver "Achados verificados" acima. Commit publicado: `a2a3b21`.
+Executado pela GitHub Action, não à mão — os números de `npm test` / `test:e2e` / `test:perf`
+já estão nas seções de Estágio 2–6.
+
+### §7.5 passos 5–8 — no site publicado, verificado em 2026-07-29
+
+Rodado com Chromium de verdade via Playwright contra
+`https://gmendonc.github.io/personal-site-giuliano/` — não `curl`: o navegador executa o JS
+de tema e de filtro, e a rede inteira foi capturada durante o fluxo.
+
+**Passo 5 — tema escuro sobrevive a três navegações.**
+Home → clique no botão de tema (`data-theme` vira `dark`) → clique em "Ver toda a
+biblioteca →" (`.../biblioteca/`, tema continua `dark`) → clique no chip "Ensaio" (contagem
+cai para "2 itens", todos os `<li>` visíveis com `data-tipo="ensaio"`) → clique no primeiro
+item (`.../biblioteca/nao-existe-estrategia-de-ia/`, `<h1>` bate com o título clicado, tema
+continua `dark`). **As três navegações mantiveram o tema. ✅**
+
+> Nota de honestidade: a peça aberta neste fluxo (`nao-existe-estrategia-de-ia`) é uma das
+> sete que eu escrevi a partir das teses do protótipo, não o texto real exportado do Obsidian
+> do Giuliano — essa decisão continua pendente, registrada na tabela abaixo.
+
+**Passo 6 — zero requisição a terceiro.**
+17 requisições capturadas ao longo do fluxo inteiro (home, alternância de tema, biblioteca,
+filtro, peça). Domínios vistos: **`{ "gmendonc.github.io" }`** — um só. **Zero terceiros. ✅**
+
+**Passo 7 — peso total transferido da home, cache vazio.**
+Contexto novo do Playwright (sem cache de disco compartilhado, equivalente a "recarregar com
+cache vazio"): **5 requisições, 188,5 KiB no total.**
+
+| recurso | KiB |
+| --- | --- |
+| HTML da home | 9,8 |
+| `newsreader-latin-wght-italic.woff2` | 63,0 |
+| `newsreader-latin-wght-normal.woff2` | 56,7 |
+| `ibm-plex-sans-latin-wght-normal.woff2` | 44,6 |
+| `ibm-plex-mono-latin-400-normal.woff2` | 14,4 |
+
+Sem limite a bater (§3.3) — linha de base para comparar depois. Bate com a soma já medida em
+`test:dist` (fontes 178,7 KiB + HTML ~9,8 KiB ≈ 188,5 KiB).
+
+**Passo 8 — botão de assinatura.**
+Clique em "Assinar no Substack →" abriu **nova aba** em
+`https://giulianomendonca.substack.com/`. **URL configurada, nova aba confirmada. ✅**
+
 **Pronto quando:** §7.5 passa no ar e o Revisor não reporta bloqueante.
-**Commit:** `—`
+**Commit:** `a2a3b21`
 
 ---
 
@@ -373,4 +474,5 @@ Registre aqui o que foi implementado diferente do que a spec pede, e por quê. S
 | ~~Cortar IBM Plex Mono~~ — desnecessário: com subset `latin` o total fica em 178,7 kB, dentro dos 200 kB | SPEC §7.3.3 | **resolvido** |
 | URL real da publicação no Substack | SPEC §6.1 | placeholder `giulianomendonca.substack.com` |
 | Domínio de publicação. **Resolvido para agora:** confirmado via API que não há domínio próprio (`cname: null`); site publicado em `gmendonc.github.io/personal-site-giuliano/`, `SITE_URL` e `base` já ajustados para isso. Se um domínio próprio for anexado depois, os dois voltam — `SITE_URL` vira o domínio, `base` vira `/`, e `src/styles/fontes.css` precisa de edição manual (não lê `BASE_URL`) | SPEC §7.5 passo 4 | resolvido para o estado atual; decisão de domínio próprio continua aberta |
-| Texto real exportado do Obsidian para pelo menos uma peça (§4.3). O agente não tem acesso ao vault; as peças atuais derivam das teses do protótipo | SPEC §4.3 | **pendente — só o Giuliano pode fazer** |
+| Texto real exportado do Obsidian para pelo menos uma peça (§4.3) | SPEC §4.3 | **resolvido em 2026-07-29** — "Iniciando a jornada da IA" substitui a peça sintética `nao-existe-estrategia-de-ia.md`, mesmo slug. As outras 5 publicadas + 1 rascunho continuam derivadas do protótipo |
+| Retrato do hero (§5.1, §9 dizia "nunca placeholder de banco, mas também não tinha foto ainda") | SPEC §5.1 | **resolvido em 2026-07-29** — `src/assets/retrato.png`, processado por `astro:assets`, 39,6 KiB em WebP |
