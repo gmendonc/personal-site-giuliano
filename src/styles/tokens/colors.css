@@ -1,0 +1,81 @@
+:root{
+  /* ============ BASE RAMPS ============ */
+
+  /* Terracotta — primary brand */
+  --terracotta-50:#FBEEE8; --terracotta-100:#F5D8C9; --terracotta-200:#EAB39B;
+  --terracotta-300:#DE8E6D; --terracotta-400:#CE6E45; --terracotta-500:#B8532E;
+  --terracotta-600:#9E4526; --terracotta-700:#7E371F; --terracotta-800:#5E2917;
+  --terracotta-900:#3E1B0F;
+
+  /* Graphite — warm near-black ink + warm grey ramp */
+  --graphite-900:#1F1D1B; --graphite-800:#2B2926; --graphite-700:#3D3A35;
+  --graphite-600:#524E48; --graphite-500:#6B655D; --graphite-400:#8A8378;
+  --graphite-300:#ADA598; --graphite-200:#CFC7B8; --graphite-100:#E7DFD0;
+  --graphite-50:#F3ECDE;
+
+  /* Sand gold — accent */
+  --gold-50:#FBF3DF; --gold-100:#F3E0B4; --gold-200:#E7C57E;
+  --gold-300:#D9A441; --gold-400:#C08D2F; --gold-500:#9E7325; --gold-600:#7A581C;
+
+  /* Petroleum green — support / secondary (never blue) */
+  --petrol-50:#E7F0ED; --petrol-100:#C2D8D1; --petrol-200:#7FA79C;
+  --petrol-300:#3A6E64; --petrol-400:#1F4B43; --petrol-500:#143229; --petrol-600:#0D2019;
+
+  /* Warm ivory neutrals */
+  --ivory-50:#FCFAF5; --ivory-100:#F7F2E9; --ivory-200:#F1EADC;
+  --ivory-300:#E9DFCC; --ivory-400:#DED0B7;
+
+  --white:#FFFFFF; --black:#000000;
+
+  /* ============ SEMANTIC ALIASES ============ */
+
+  /* Brand */
+  --brand:var(--terracotta-500);
+  --brand-hover:var(--terracotta-600);
+  --brand-active:var(--terracotta-700);
+  --brand-subtle:var(--terracotta-50);
+  --brand-border:var(--terracotta-200);
+  --brand-contrast:var(--ivory-50);
+
+  --accent:var(--gold-300);
+  --accent-hover:var(--gold-400);
+  --accent-subtle:var(--gold-50);
+
+  --secondary:var(--petrol-400);
+  --secondary-hover:var(--petrol-500);
+  --secondary-subtle:var(--petrol-50);
+
+  /* Text */
+  --text-strong:var(--graphite-900);
+  --text-body:var(--graphite-800);
+  --text-muted:var(--graphite-500);
+  --text-subtle:var(--graphite-400);
+  --text-on-brand:var(--ivory-50);
+  --text-on-dark:var(--ivory-100);
+  --text-link:var(--terracotta-600);
+  --text-link-hover:var(--terracotta-700);
+
+  /* Surfaces / backgrounds */
+  --page:var(--ivory-100);
+  --surface:var(--ivory-50);
+  --surface-2:var(--ivory-200);
+  --surface-3:var(--ivory-300);
+  --surface-card:var(--white);
+  --surface-inverse:var(--graphite-900);
+  --surface-inverse:var(--graphite-900);
+
+  /* Borders / lines */
+  --border:var(--ivory-400);
+  --border-strong:var(--graphite-200);
+  --border-ink:var(--graphite-800);
+  --hairline:color-mix(in srgb,var(--graphite-800) 12%,transparent);
+
+  /* Semantic status (no blue) */
+  --success:#3E7C5A; --success-subtle:#E4EFE8;
+  --warning:var(--gold-400); --warning-subtle:var(--gold-50);
+  --danger:#9B2C22; --danger-subtle:#F7E4E0;
+  --info:var(--petrol-400); --info-subtle:var(--petrol-50);
+
+  /* Focus ring */
+  --ring:color-mix(in srgb,var(--terracotta-500) 55%,transparent);
+}

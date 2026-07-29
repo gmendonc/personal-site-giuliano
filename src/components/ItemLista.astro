@@ -1,0 +1,166 @@
+---
+import { TIPOS } from '../content/tipos';
+import { formatarData, dataLegivel, idadeRelativa } from '../lib/datas';
+import type { Peca } from '../lib/biblioteca';
+
+/**
+ * Linha da lista densa. Dois pontos de chamada — a lista da home e a da
+ * biblioteca — que é exatamente o critério de extração da SPEC §8.
+ *
+ * O ícone e o rótulo do formato vêm de TIPOS. Nada aqui redigita nenhum dos
+ * dois; se redigitasse, o teste anti-vazamento de §7.1 pegaria.
+ */
+interface Props {
+  peca: Peca;
+  mostrarResumo?: boolean;
+}
+
+const { peca, mostrarResumo = false } = Astro.props;
+
+const { rotulo, icone } = TIPOS[peca.data.tipo];
+
+/* "atualizado há 25 dias" depende de a peça ter revisão registrada, não do
+   formato dela — o protótipo só mostrava isso em `padrao` porque só `padrao`
+   tinha o campo preenchido. */
+const idade = peca.data.atualizado
+  ? `atualizado ${idadeRelativa(peca.data.atualizado)}`
+  : idadeRelativa(peca.data.data);
+
+/* O datetime do <time> tem que casar com o texto que ele embrulha, e o texto
+   é a data de PUBLICAÇÃO. Usar aqui a data de revisão faria o atributo dizer
+   uma coisa e o texto outra — além de bagunçar qualquer leitura de ordem
+   cronológica feita pelos atributos (foi assim que §7.4 pegou o erro). A data
+   de revisão aparece na idade, ao lado, e no title. */
+const titulo = peca.data.atualizado
+  ? `Publicado em ${dataLegivel(peca.data.data)} · revisado em ${dataLegivel(peca.data.atualizado)}`
+  : `Publicado em ${dataLegivel(peca.data.data)}`;
+---
+
+<li class="item" data-tipo={peca.data.tipo}>
+  <a class="item-link" href={`/biblioteca/${peca.id}`}>
+    <span class="item-meta">
+      <time class="item-data" datetime={peca.data.data.toISOString()} title={titulo}>
+        {formatarData(peca.data.data)}
+      </time>
+      <span class="item-icone" aria-hidden="true">{icone}</span>
+      <span class="item-tipo">{rotulo} · {idade}</span>
+    </span>
+    <span class="item-corpo">
+      <span class="item-titulo">{peca.data.titulo}</span>
+      {mostrarResumo && <span class="item-resumo">{peca.data.resumo}</span>}
+    </span>
+  </a>
+</li>
+
+<style>
+  .item {
+    list-style: none;
+    border-bottom: var(--border-width) solid var(--border);
+  }
+
+  /* Grid 118px 22px 1fr auto — data · ícone · título · tipo e idade (§5.1).
+     A ordem visual vem de grid-column explícito, não da ordem do DOM. Isso
+     deixa o DOM na ordem que o mobile quer (título primeiro) sem duplicar
+     markup: .item-meta some como caixa via display:contents. */
+  .item-link {
+    display: grid;
+    grid-template-columns: 118px 22px 1fr auto;
+    gap: var(--space-4);
+    align-items: baseline;
+    padding: var(--space-4) var(--space-1);
+    /* 44px de alvo de toque — §7.3.2 mede os links da lista densa. */
+    min-height: 44px;
+    text-decoration: none;
+    transition: background-color var(--dur-fast) var(--ease-standard);
+  }
+
+  .item-link:hover {
+    background: var(--surface-2);
+    text-decoration: none;
+  }
+
+  .item-meta {
+    display: contents;
+  }
+
+  .item-data {
+    grid-column: 1;
+    grid-row: 1;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-subtle);
+  }
+
+  .item-icone {
+    grid-column: 2;
+    grid-row: 1;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    /* Terracota em texto pequeno usa --text-link, nunca --brand: §3.4. */
+    color: var(--text-link);
+  }
+
+  .item-corpo {
+    grid-column: 3;
+    grid-row: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .item-tipo {
+    grid-column: 4;
+    grid-row: 1;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .item-titulo {
+    /* 16px é o piso de texto de corpo verificado em 375px por §7.3.2. */
+    font-size: var(--text-base);
+    line-height: 1.4;
+    color: var(--text-strong);
+  }
+
+  .item-resumo {
+    font-size: var(--text-sm);
+    line-height: var(--lh-body);
+    color: var(--text-muted);
+  }
+
+  /* Abaixo de 860px vira uma coluna só: título em cima, metadados embaixo
+     numa linha só (§5.5). O grid continua sendo grid, com um único track —
+     é isso que §7.3.2 mede em 375px. */
+  @media (max-width: 860px) {
+    .item-link {
+      grid-template-columns: 1fr;
+      row-gap: var(--space-2);
+    }
+
+    .item-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: var(--space-2);
+      order: 2;
+    }
+
+    .item-corpo {
+      order: 1;
+    }
+
+    .item-data,
+    .item-icone,
+    .item-tipo,
+    .item-corpo {
+      grid-column: auto;
+      grid-row: auto;
+    }
+
+    .item-titulo {
+      font-size: var(--text-md);
+    }
+  }
+</style>

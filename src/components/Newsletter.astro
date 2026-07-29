@@ -1,0 +1,124 @@
+---
+import Button from './Button.astro';
+import { NEWSLETTER_URL, NEWSLETTER_LEITORES } from '../config';
+
+/**
+ * Bloco de assinatura da newsletter.
+ *
+ * Este é o único arquivo do projeto que sabe QUEM é o provedor e COMO a
+ * assinatura acontece. Nenhuma página menciona o provedor; elas pedem
+ * "o bloco de newsletter" e recebem isso (SPEC §6.1, ADR 0003).
+ *
+ * Quando a implementação mudar — embed, formulário próprio, outro provedor —
+ * muda este arquivo e mais nenhum. É a razão de a interface ter uma
+ * propriedade só.
+ *
+ * Nesta fatia é link, não formulário: o embed do provedor é um iframe de
+ * largura fixa 480px que estoura o container no mobile e carrega recursos de
+ * terceiro, o que tornaria falsa a declaração do rodapé. Ver ADR 0003.
+ */
+interface Props {
+  variante?: 'inline' | 'rodape';
+}
+
+const { variante = 'inline' } = Astro.props;
+
+/* A contagem só aparece quando o número justificar. Enquanto for zero, a linha
+   inteira some — não renderizamos o placeholder "[N] leitores" do protótipo
+   (SPEC §6.2). */
+const mostrarLeitores = NEWSLETTER_LEITORES > 0;
+---
+
+<div class:list={['newsletter', `newsletter--${variante}`]}>
+  <div class="newsletter-texto">
+    {
+      variante === 'inline' ? (
+        <p class="newsletter-chamada">
+          <strong>Uma carta a cada duas semanas</strong> sobre IA, decisão e gestão do
+          conhecimento. Sem resumo de notícia — só o que eu realmente pensei sobre o assunto.
+        </p>
+      ) : (
+        <p class="newsletter-chamada">Uma carta a cada duas semanas. Sem resumo de notícia.</p>
+      )
+    }
+    {mostrarLeitores && <p class="newsletter-leitores">{NEWSLETTER_LEITORES} leitores</p>}
+  </div>
+
+  <div class="newsletter-acao">
+    <Button
+      href={NEWSLETTER_URL}
+      variante={variante === 'rodape' ? 'secundario' : 'primario'}
+      target="_blank"
+      rel="noopener"
+    >
+      Assinar no Substack →
+    </Button>
+  </div>
+</div>
+
+<style>
+  .newsletter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+  }
+
+  .newsletter-texto {
+    max-width: 60ch;
+  }
+
+  .newsletter-chamada {
+    margin: 0;
+    font-size: var(--text-base);
+    line-height: 1.55;
+    color: var(--text-body);
+  }
+
+  .newsletter-leitores {
+    margin: var(--space-2) 0 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--text-subtle);
+  }
+
+  /* Variante do rodapé: fundo escuro fixo, independente do tema. */
+  .newsletter--rodape {
+    display: block;
+  }
+
+  .newsletter--rodape .newsletter-chamada {
+    margin-bottom: var(--space-3);
+    font-size: var(--text-sm);
+    color: color-mix(in srgb, var(--ivory-100) 85%, transparent);
+  }
+
+  .newsletter--rodape .newsletter-leitores {
+    color: color-mix(in srgb, var(--ivory-100) 70%, transparent);
+  }
+
+  .newsletter--rodape .newsletter-acao :global(.botao--secundario) {
+    border-color: color-mix(in srgb, var(--ivory-100) 45%, transparent);
+    color: var(--ivory-50);
+  }
+
+  .newsletter--rodape .newsletter-acao :global(.botao--secundario:hover) {
+    border-color: var(--gold-300);
+    color: var(--gold-300);
+  }
+
+  @media (max-width: 860px) {
+    .newsletter {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-4);
+    }
+
+    .newsletter-acao {
+      width: 100%;
+    }
+  }
+</style>

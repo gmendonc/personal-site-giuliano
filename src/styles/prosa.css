@@ -1,0 +1,97 @@
+/* Tipografia do corpo em Markdown — SPEC §5.3.
+   Escopado em .prosa para não vazar para o resto do site. */
+
+.prosa {
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: var(--lh-body);
+  color: var(--text-body);
+}
+
+.prosa h2 {
+  font-size: var(--text-xl);
+  margin: var(--space-8) 0 var(--space-3);
+}
+
+.prosa h3 {
+  font-size: var(--text-lg);
+  margin: var(--space-7) 0 var(--space-2);
+}
+
+.prosa h2:first-child,
+.prosa h3:first-child {
+  margin-top: 0;
+}
+
+.prosa p {
+  margin: 0 0 var(--space-5);
+}
+
+.prosa ul,
+.prosa ol {
+  margin: 0 0 var(--space-5);
+  padding-left: var(--space-6);
+}
+
+.prosa li + li {
+  margin-top: var(--space-2);
+}
+
+.prosa li::marker {
+  color: var(--text-muted);
+}
+
+.prosa a {
+  color: var(--text-link);
+}
+
+.prosa blockquote {
+  margin: var(--space-6) 0;
+  padding: var(--space-2) 0 var(--space-2) var(--space-5);
+  border-left: var(--border-width-strong) solid var(--brand);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.prosa blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+.prosa code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background: var(--surface-2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.1em 0.35em;
+}
+
+.prosa pre {
+  margin: var(--space-6) 0;
+  padding: var(--space-5);
+  background: var(--surface-2);
+  border: var(--border-width) solid var(--border);
+  border-radius: var(--radius-lg);
+  /* Código longo rola dentro da caixa, não na página — §7.3.2. */
+  overflow-x: auto;
+}
+
+.prosa pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: var(--text-sm);
+}
+
+.prosa hr {
+  margin: var(--space-8) 0;
+}
+
+.prosa img {
+  border-radius: var(--radius-lg);
+  border: var(--border-width) solid var(--border);
+}
+
+.prosa strong {
+  color: var(--text-strong);
+}

@@ -1,0 +1,103 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Newsletter from '../../components/Newsletter.astro';
+import { pecasPublicadas, type Peca } from '../../lib/biblioteca';
+import { TIPOS } from '../../content/tipos';
+import { dataLegivel, idadeRelativa } from '../../lib/datas';
+import '../../styles/prosa.css';
+
+export async function getStaticPaths() {
+  const pecas = await pecasPublicadas();
+  return pecas.map((peca) => ({ params: { slug: peca.id }, props: { peca } }));
+}
+
+interface Props {
+  peca: Peca;
+}
+
+const { peca } = Astro.props;
+const { Content } = await render(peca);
+
+const { rotulo } = TIPOS[peca.data.tipo];
+---
+
+<Base titulo={peca.data.titulo} descricao={peca.data.resumo}>
+  <article class="container-estreito peca">
+    <header class="peca-cabecalho">
+      <p class="peca-eyebrow">
+        <span>{rotulo}</span>
+        <span aria-hidden="true">·</span>
+        <time datetime={peca.data.data.toISOString()}>{dataLegivel(peca.data.data)}</time>
+      </p>
+
+      <h1 class="peca-titulo">{peca.data.titulo}</h1>
+      <p class="peca-resumo">{peca.data.resumo}</p>
+
+      {
+        peca.data.atualizado && (
+          <p class="peca-atualizado">
+            Revisado em{' '}
+            <time datetime={peca.data.atualizado.toISOString()}>
+              {dataLegivel(peca.data.atualizado)}
+            </time>{' '}
+            · {idadeRelativa(peca.data.atualizado)}
+          </p>
+        )
+      }
+    </header>
+
+    <div class="prosa">
+      <Content />
+    </div>
+  </article>
+
+  <section class="faixa-newsletter">
+    <div class="container">
+      <Newsletter variante="inline" />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .peca {
+    padding-top: var(--space-9);
+    padding-bottom: var(--space-9);
+  }
+
+  .peca-cabecalho {
+    margin-bottom: var(--space-7);
+  }
+
+  .peca-eyebrow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 var(--space-4);
+  }
+
+  .peca-titulo {
+    font-size: clamp(2.25rem, 4vw, 3rem);
+    letter-spacing: -0.025em;
+    margin: 0 0 var(--space-4);
+  }
+
+  .peca-resumo {
+    margin: 0;
+    font-size: var(--text-md);
+    line-height: var(--lh-relaxed);
+    color: var(--text-muted);
+  }
+
+  .peca-atualizado {
+    margin: var(--space-4) 0 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-subtle);
+  }
+</style>

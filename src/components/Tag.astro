@@ -1,0 +1,60 @@
+---
+/**
+ * Tag do design system, reimplementado em .astro (SPEC §2.3).
+ * Usado como chip de filtro na biblioteca — por isso é um link real, que
+ * funciona sem JavaScript e é alcançável por Tab.
+ */
+interface Props {
+  href: string;
+  ativo?: boolean;
+  'data-filtro'?: string;
+}
+
+const { href, ativo = false, ...resto } = Astro.props;
+---
+
+{/* aria-current, e não aria-pressed: `aria-pressed` só vale em role=button, e
+    num <a> ele é violação crítica de aria-allowed-attr (pego pelo axe em
+    §7.3.4). Para um link que representa o filtro em vigor, aria-current é o
+    atributo certo. */}
+<a class:list={['tag', { 'tag--ativo': ativo }]} href={href} aria-current={ativo} {...resto}>
+  <slot />
+</a>
+
+<style>
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    /* 44px de alvo de toque — §7.3.2 mede os chips explicitamente. */
+    min-height: 44px;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-pill);
+    border: var(--border-width) solid var(--border-strong);
+    background: var(--surface-card);
+    color: var(--text-body);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: var(--transition-colors);
+  }
+
+  .tag:hover {
+    border-color: var(--brand-border);
+    color: var(--text-link);
+    text-decoration: none;
+  }
+
+  .tag--ativo {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: var(--brand-contrast);
+  }
+
+  .tag--ativo:hover {
+    background: var(--brand-hover);
+    border-color: var(--brand-hover);
+    color: var(--brand-contrast);
+  }
+</style>

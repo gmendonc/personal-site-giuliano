@@ -1,0 +1,13 @@
+:root{
+  /* 4px base spacing scale */
+  --space-0:0; --space-1:0.25rem; --space-2:0.5rem; --space-3:0.75rem;
+  --space-4:1rem; --space-5:1.5rem; --space-6:2rem; --space-7:2.5rem;
+  --space-8:3rem; --space-9:4rem; --space-10:5rem; --space-11:6.5rem;
+  --space-12:8rem;
+
+  /* Layout */
+  --container:1200px; /* @kind spacing */
+  --container-narrow:760px; /* @kind spacing */
+  --gutter:clamp(1.25rem,5vw,4rem); /* @kind spacing */
+  --section-y:clamp(4rem,9vw,8rem); /* @kind spacing */
+}

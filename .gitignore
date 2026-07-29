@@ -1,24 +1,18 @@
-# build output
+# build
 dist/
-.output/
-
-# dependencies
+.astro/
 node_modules/
 
-# logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+# fontes copiadas de node_modules por scripts/copiar-fontes.mjs
+public/fontes/
 
+# testes
+test-results/
+playwright-report/
+.lighthouseci/
 
-# environment variables
+# ambiente
 .env
 .env.production
-
-# macOS-specific files
 .DS_Store
-
-pnpm-lock.yaml
-
-.astro
+npm-debug.log*

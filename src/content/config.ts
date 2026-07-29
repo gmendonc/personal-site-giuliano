@@ -1,70 +1,28 @@
-import { z, defineCollection } from 'astro:content';
+import { defineCollection, z } from 'astro:content';
 import { glob } from 'astro/loaders';
+import { CHAVES_TIPO } from './tipos';
 
-const metadataDefinition = () =>
-  z
-    .object({
-      title: z.string().optional(),
-      ignoreTitleTemplate: z.boolean().optional(),
-
-      canonical: z.string().url().optional(),
-
-      robots: z
-        .object({
-          index: z.boolean().optional(),
-          follow: z.boolean().optional(),
-        })
-        .optional(),
-
-      description: z.string().optional(),
-
-      openGraph: z
-        .object({
-          url: z.string().optional(),
-          siteName: z.string().optional(),
-          images: z
-            .array(
-              z.object({
-                url: z.string(),
-                width: z.number().optional(),
-                height: z.number().optional(),
-              })
-            )
-            .optional(),
-          locale: z.string().optional(),
-          type: z.string().optional(),
-        })
-        .optional(),
-
-      twitter: z
-        .object({
-          handle: z.string().optional(),
-          site: z.string().optional(),
-          cardType: z.string().optional(),
-        })
-        .optional(),
-    })
-    .optional();
-
-const postCollection = defineCollection({
-  loader: glob({ pattern: ['*.md', '*.mdx'], base: 'src/data/post' }),
+/**
+ * Schema da biblioteca. O enum de `tipo` vem de CHAVES_TIPO — não é
+ * redigitado aqui (SPEC §4.2). Item com tipo inválido quebra o build, e esse
+ * é o comportamento desejado: não conserte.
+ */
+const biblioteca = defineCollection({
+  loader: glob({ pattern: '*.md', base: './src/content/biblioteca' }),
   schema: z.object({
-    publishDate: z.date().optional(),
-    updateDate: z.date().optional(),
-    draft: z.boolean().optional(),
-
-    title: z.string(),
-    excerpt: z.string().optional(),
-    image: z.string().optional(),
-
-    category: z.string().optional(),
-    tags: z.array(z.string()).optional(),
-    author: z.string().optional(),
-
-    metadata: metadataDefinition(),
+    titulo: z.string(),
+    resumo: z.string(),
+    tipo: z.enum(CHAVES_TIPO),
+    data: z.coerce.date(),
+    /* Só faz sentido em `padrao`, que é conteúdo permanente e revisado. */
+    atualizado: z.coerce.date().optional(),
+    /* Marca o que depois ganhará rota estável própria. Nesta fatia NÃO muda a
+       URL — ver SPEC §4.4. Não invente /padroes/ agora. */
+    permanente: z.boolean().default(false),
+    rascunho: z.boolean().default(false),
+    /* Não usadas nesta fatia. O campo existe para não precisar migrar depois. */
+    tags: z.array(z.string()).default([]),
   }),
 });
 
-export const collections = {
-  post: postCollection,
-};
+export const collections = { biblioteca };

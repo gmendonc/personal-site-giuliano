@@ -1,0 +1,75 @@
+---
+import '../styles/global.css';
+import Cabecalho from '../components/Cabecalho.astro';
+import Rodape from '../components/Rodape.astro';
+import { SITE_TITULO, SITE_DESCRICAO, SITE_SUBTITULO, SITE_URL } from '../config';
+
+interface Props {
+  titulo?: string;
+  descricao?: string;
+}
+
+const { titulo, descricao = SITE_DESCRICAO } = Astro.props;
+
+const tituloCompleto = titulo ? `${titulo} — ${SITE_TITULO}` : `${SITE_TITULO} — ${SITE_SUBTITULO}`;
+const canonica = new URL(Astro.url.pathname, SITE_URL);
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>{tituloCompleto}</title>
+    <meta name="description" content={descricao} />
+    <link rel="canonical" href={canonica.href} />
+    <link rel="alternate" type="application/rss+xml" title={SITE_TITULO} href="/rss.xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_TITULO} />
+    <meta property="og:title" content={tituloCompleto} />
+    <meta property="og:description" content={descricao} />
+    <meta property="og:url" content={canonica.href} />
+    <meta property="og:locale" content="pt_BR" />
+
+    {/* Preload SÓ da fonte de display: ela é o LCP da home (o <h1> em
+        Newsreader). Precarregar as três anula o ganho — §7.3.1. */}
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fontes/newsreader-latin-wght-normal.woff2"
+      crossorigin
+    />
+
+    {/* Aplica o tema salvo ANTES de qualquer CSS pintar, senão a página pisca
+        claro antes de escurecer. Precedência: localStorage →
+        prefers-color-scheme → claro (SPEC §3.2).
+
+        Nenhum valor de cor aqui — só o atributo. As cores do tema escuro moram
+        em src/styles/overrides.css, em um bloco só. */}
+    <script is:inline>
+      (function () {
+        try {
+          var salvo = localStorage.getItem('tema');
+          var escuro =
+            salvo === 'dark' ||
+            (salvo === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (escuro) document.documentElement.dataset.theme = 'dark';
+        } catch {
+          /* localStorage bloqueado: segue no tema claro. */
+        }
+      })();
+    </script>
+  </head>
+
+  <body>
+    <a class="pular-para-conteudo" href="#conteudo">Pular para o conteúdo</a>
+    <Cabecalho />
+    <main id="conteudo">
+      <slot />
+    </main>
+    <Rodape />
+  </body>
+</html>

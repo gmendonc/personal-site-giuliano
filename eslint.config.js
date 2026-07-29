@@ -1,59 +1,44 @@
-import astroEslintParser from 'astro-eslint-parser';
-import eslintPluginAstro from 'eslint-plugin-astro';
-import globals from 'globals';
 import js from '@eslint/js';
-import tseslint from 'typescript-eslint';
-import typescriptParser from '@typescript-eslint/parser';
+import globals from 'globals';
+import tsParser from '@typescript-eslint/parser';
+import astro from 'eslint-plugin-astro';
 
 export default [
-  js.configs.recommended,
-  ...eslintPluginAstro.configs['flat/recommended'],
-  ...tseslint.configs.recommended,
   {
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-        ...globals.node,
-      },
-    },
+    ignores: ['dist/**', '.astro/**', 'node_modules/**', 'public/fontes/**'],
   },
+
+  js.configs.recommended,
+  ...astro.configs.recommended,
+
+  /* TypeScript: quem checa tipo é `astro check`. Aqui o parser existe só para
+     o ESLint conseguir ler o arquivo; no-undef sai porque o TS já resolve. */
+  {
+    files: ['**/*.ts'],
+    languageOptions: {
+      parser: tsParser,
+      ecmaVersion: 2023,
+      sourceType: 'module',
+      globals: { ...globals.node, ...globals.browser },
+    },
+    rules: { 'no-undef': 'off' },
+  },
+
+  /* Blocos <script> de componentes .astro rodam no navegador. */
   {
     files: ['**/*.astro'],
     languageOptions: {
-      parser: astroEslintParser,
-      parserOptions: {
-        parser: '@typescript-eslint/parser',
-        extraFileExtensions: ['.astro'],
-      },
+      globals: { ...globals.browser },
     },
   },
+
+  /* Scripts de build e de verificação rodam no Node. */
   {
-    files: ['**/*.{js,jsx,astro}'],
-    rules: {
-      'no-mixed-spaces-and-tabs': ['error', 'smart-tabs'],
-    },
-  },
-  {
-    // Define the configuration for `<script>` tag.
-    // Script in `<script>` is assigned a virtual file name with the `.js` extension.
-    files: ['**/*.{ts,tsx}', '**/*.astro/*.js'],
+    files: ['scripts/**/*.mjs'],
     languageOptions: {
-      parser: typescriptParser,
+      ecmaVersion: 2023,
+      sourceType: 'module',
+      globals: { ...globals.node },
     },
-    rules: {
-      // Note: you must disable the base rule as it can report incorrect errors
-      'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        {
-          argsIgnorePattern: '^_',
-          destructuredArrayIgnorePattern: '^_',
-        },
-      ],
-      '@typescript-eslint/no-non-null-assertion': 'off',
-    },
-  },
-  {
-    ignores: ['dist', 'node_modules', '.github', 'types.generated.d.ts', '.astro'],
   },
 ];

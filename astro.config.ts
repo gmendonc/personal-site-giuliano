@@ -1,90 +1,26 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
-
 import { defineConfig } from 'astro/config';
-
 import sitemap from '@astrojs/sitemap';
-import tailwind from '@astrojs/tailwind';
-import mdx from '@astrojs/mdx';
-import partytown from '@astrojs/partytown';
-import icon from 'astro-icon';
-import compress from 'astro-compress';
-import type { AstroIntegration } from 'astro';
-
-import astrowind from './vendor/integration';
-
-import { readingTimeRemarkPlugin, responsiveTablesRehypePlugin, lazyImagesRehypePlugin } from './src/utils/frontmatter';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-const hasExternalScripts = false;
-const whenExternalScripts = (items: (() => AstroIntegration) | (() => AstroIntegration)[] = []) =>
-  hasExternalScripts ? (Array.isArray(items) ? items.map((item) => item()) : [items()]) : [];
+import { SITE_URL } from './src/config';
 
 export default defineConfig({
+  site: SITE_URL,
   output: 'static',
-
-  integrations: [
-    tailwind({
-      applyBaseStyles: false,
-    }),
-    sitemap(),
-    mdx(),
-    icon({
-      include: {
-        tabler: ['*'],
-        'flat-color-icons': [
-          'template',
-          'gallery',
-          'approval',
-          'document',
-          'advertising',
-          'currency-exchange',
-          'voice-presentation',
-          'business-contact',
-          'database',
-        ],
-      },
-    }),
-
-    ...whenExternalScripts(() =>
-      partytown({
-        config: { forward: ['dataLayer.push'] },
-      })
-    ),
-
-    compress({
-      CSS: true,
-      HTML: {
-        'html-minifier-terser': {
-          removeAttributeQuotes: false,
-        },
-      },
-      Image: false,
-      JavaScript: true,
-      SVG: false,
-      Logger: 1,
-    }),
-
-    astrowind({
-      config: './src/config.yaml',
-    }),
-  ],
-
-  image: {
-    domains: ['cdn.pixabay.com'],
-  },
-
+  integrations: [sitemap()],
   markdown: {
-    remarkPlugins: [readingTimeRemarkPlugin],
-    rehypePlugins: [responsiveTablesRehypePlugin, lazyImagesRehypePlugin],
+    shikiConfig: { theme: 'github-light', wrap: true },
   },
-
-  vite: {
-    resolve: {
-      alias: {
-        '~': path.resolve(__dirname, './src'),
-      },
-    },
+  build: {
+    /* Todo o CSS entra inline no HTML.
+     *
+     * Com 'auto', o build deixava DOIS <link rel=stylesheet> bloqueando a
+     * renderização em toda página (17,3 kB + 8,8 kB). No perfil mobile do
+     * Lighthouse isso são duas idas ao servidor antes do primeiro pixel, e o
+     * LCP media ~2,1 s contra o limite de 1,8 s de §7.3.1.
+     *
+     * O custo é que o CSS deixa de ser cacheado entre páginas e cada HTML
+     * cresce. Aceito de propósito: o site tem 26 kB de CSS no total, e peso de
+     * página não é portão nesta spec (§3.3) — LCP é.
+     */
+    inlineStylesheets: 'always',
   },
 });

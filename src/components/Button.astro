@@ -1,0 +1,91 @@
+---
+/**
+ * Button do design system, reimplementado em .astro.
+ * O bundle React do DS não é importado (SPEC §2.3).
+ *
+ * Renderiza <a> quando recebe href, <button> quando não recebe.
+ */
+interface Props {
+  href?: string;
+  variante?: 'primario' | 'secundario';
+  larguraTotal?: boolean;
+  target?: string;
+  rel?: string;
+  type?: 'button' | 'submit';
+}
+
+const {
+  href,
+  variante = 'primario',
+  larguraTotal = false,
+  target,
+  rel,
+  type = 'button',
+  ...resto
+} = Astro.props;
+
+const Elemento = href ? 'a' : 'button';
+const atributos = href ? { href, target, rel } : { type };
+---
+
+<Elemento
+  class:list={['botao', `botao--${variante}`, { 'botao--largura-total': larguraTotal }]}
+  {...atributos}
+  {...resto}
+>
+  <slot />
+</Elemento>
+
+<style>
+  .botao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    /* 44px de alvo de toque — exigido em 375px por §7.3.2 */
+    min-height: 44px;
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-md);
+    border: var(--border-width-strong) solid transparent;
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    font-weight: var(--fw-semibold);
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      background-color var(--dur-fast) var(--ease-standard),
+      border-color var(--dur-fast) var(--ease-standard),
+      color var(--dur-fast) var(--ease-standard);
+  }
+
+  .botao--largura-total {
+    width: 100%;
+  }
+
+  .botao--primario {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: var(--brand-contrast);
+  }
+
+  .botao--primario:hover {
+    background: var(--brand-hover);
+    border-color: var(--brand-hover);
+    color: var(--brand-contrast);
+    text-decoration: none;
+  }
+
+  .botao--secundario {
+    background: transparent;
+    border-color: var(--border-strong);
+    color: var(--text-body);
+  }
+
+  .botao--secundario:hover {
+    border-color: var(--brand);
+    color: var(--text-link);
+    text-decoration: none;
+  }
+</style>

@@ -1,0 +1,201 @@
+---
+import Base from '../../layouts/Base.astro';
+import ItemLista from '../../components/ItemLista.astro';
+import Tag from '../../components/Tag.astro';
+import { pecasPublicadas } from '../../lib/biblioteca';
+import { TIPOS, CHAVES_TIPO } from '../../content/tipos';
+
+const pecas = await pecasPublicadas();
+
+/* Os chips derivam de TIPOS. Acrescentar um sexto formato não toca este
+   arquivo — é o critério de aceite da SPEC §4.1. */
+const chips = [
+  { chave: 'todos', rotulo: 'Todos' },
+  ...CHAVES_TIPO.map((chave) => ({ chave, rotulo: TIPOS[chave].rotulo })),
+];
+
+/* "Padrões nomeados" sai do conteúdo, não de uma lista escrita à mão: é o que
+   está marcado como permanente no frontmatter (SPEC §4.4). */
+const permanentes = pecas.filter((peca) => peca.data.permanente);
+const iconePermanente = TIPOS.padrao.icone;
+---
+
+<Base
+  titulo="Biblioteca"
+  descricao="Todo o pensamento, em cinco formatos — ensaios, notas, casos, padrões e leituras."
+>
+  <div class="container biblioteca">
+    <p class="eyebrow-secao">Biblioteca</p>
+    <h1 class="biblioteca-titulo">Todo o pensamento, em cinco formatos</h1>
+    <p class="biblioteca-intro">
+      Formatos com custos diferentes, para que sempre exista um do tamanho da ideia. Cada item
+      mostra o tipo e há quanto tempo foi escrito — nem tudo aqui é ensaio acabado, e isso é
+      proposital.
+    </p>
+
+    {/* Os chips são links reais para ?tipo=…, resolvidos no cliente. Sem
+        framework, sem roteamento. Funcionam por teclado e sobrevivem a um
+        recarregamento com a query preenchida (SPEC §5.2). */}
+    <div class="filtros" role="group" aria-label="Filtrar por formato">
+      {
+        chips.map((chip) => (
+          <Tag
+            href={chip.chave === 'todos' ? '/biblioteca' : `/biblioteca?tipo=${chip.chave}`}
+            data-filtro={chip.chave}
+            ativo={chip.chave === 'todos'}
+          >
+            {chip.rotulo}
+          </Tag>
+        ))
+      }
+    </div>
+
+    <p class="contagem" id="contagem" aria-live="polite">
+      {pecas.length}{pecas.length === 1 ? ' item' : ' itens'}
+    </p>
+
+    <ul class="lista-densa" id="lista">
+      {pecas.map((peca) => <ItemLista peca={peca} mostrarResumo />)}
+    </ul>
+
+    {
+      permanentes.length > 0 && (
+        <section class="padroes">
+          <p class="eyebrow-secao">Padrões nomeados</p>
+          <p class="padroes-texto">
+            Frameworks têm página permanente e URL estável — é o que permite que outra pessoa cite
+            a ideia sem citar o post.
+          </p>
+          <div class="padroes-lista">
+            {permanentes.map((peca) => (
+              <a class="padrao-chip" href={`/biblioteca/${peca.id}`}>
+                <span aria-hidden="true">{iconePermanente}</span> {peca.data.titulo}
+              </a>
+            ))}
+          </div>
+        </section>
+      )
+    }
+  </div>
+</Base>
+
+<script>
+  /* Filtro por tipo, resolvido no cliente. Esconde e mostra <li> por
+     data-tipo e mantém a contagem em sincronia. É tudo o que a fatia precisa —
+     busca por texto está fora de escopo (SPEC §5.2). */
+  const lista = document.getElementById('lista');
+  const contagem = document.getElementById('contagem');
+  const chips = document.querySelectorAll<HTMLAnchorElement>('[data-filtro]');
+
+  function aplicar(tipo: string) {
+    const itens = lista?.querySelectorAll<HTMLLIElement>('li[data-tipo]') ?? [];
+    let visiveis = 0;
+
+    itens.forEach((item) => {
+      const combina = tipo === 'todos' || item.dataset.tipo === tipo;
+      item.hidden = !combina;
+      if (combina) visiveis += 1;
+    });
+
+    if (contagem) contagem.textContent = `${visiveis}${visiveis === 1 ? ' item' : ' itens'}`;
+
+    chips.forEach((chip) => {
+      const ativo = chip.dataset.filtro === tipo;
+      chip.classList.toggle('tag--ativo', ativo);
+      /* aria-current, não aria-pressed — ver comentário em Tag.astro. */
+      if (ativo) chip.setAttribute('aria-current', 'true');
+      else chip.removeAttribute('aria-current');
+    });
+  }
+
+  chips.forEach((chip) => {
+    chip.addEventListener('click', (evento) => {
+      evento.preventDefault();
+      const tipo = chip.dataset.filtro ?? 'todos';
+      history.replaceState(null, '', tipo === 'todos' ? '/biblioteca' : `/biblioteca?tipo=${tipo}`);
+      aplicar(tipo);
+    });
+  });
+
+  aplicar(new URLSearchParams(location.search).get('tipo') ?? 'todos');
+</script>
+
+<style>
+  .biblioteca {
+    padding-top: var(--space-9);
+  }
+
+  .biblioteca-titulo {
+    font-size: clamp(2.25rem, 4vw, 3.25rem);
+    letter-spacing: -0.025em;
+    margin: 0 0 var(--space-3);
+  }
+
+  .biblioteca-intro {
+    margin: 0 0 var(--space-6);
+    font-size: var(--text-md);
+    line-height: var(--lh-body);
+    color: var(--text-muted);
+    max-width: 70ch;
+  }
+
+  .filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+
+  .contagem {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--text-subtle);
+    margin: 0 0 var(--space-5);
+  }
+
+  .padroes {
+    margin-top: var(--space-8);
+    padding: var(--space-6);
+    background: var(--surface-2);
+    border: var(--border-width) solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+
+  .padroes-texto {
+    margin: 0 0 var(--space-4);
+    font-size: var(--text-base);
+    line-height: var(--lh-body);
+    color: var(--text-body);
+    max-width: 70ch;
+  }
+
+  .padroes-lista {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .padrao-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 44px;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    padding: var(--space-2) var(--space-3);
+    border: var(--border-width) solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    color: var(--text-body);
+    text-decoration: none;
+    background: var(--surface-card);
+    transition: var(--transition-colors);
+  }
+
+  .padrao-chip:hover {
+    border-color: var(--brand);
+    color: var(--text-link);
+    text-decoration: none;
+  }
+</style>

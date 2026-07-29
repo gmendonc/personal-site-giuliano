@@ -1,399 +1,664 @@
 ---
-import Layout from '~/layouts/PageLayout.astro';
+import Base from '../layouts/Base.astro';
+import Newsletter from '../components/Newsletter.astro';
+import ItemLista from '../components/ItemLista.astro';
+import Badge from '../components/Badge.astro';
+import { pecasPublicadas } from '../lib/biblioteca';
+import { TIPOS } from '../content/tipos';
+import { formatarData } from '../lib/datas';
 
-import Hero from '~/components/widgets/Hero.astro';
-import Note from '~/components/widgets/Note.astro';
-import Features from '~/components/widgets/Features.astro';
-import Features2 from '~/components/widgets/Features2.astro';
-import Steps from '~/components/widgets/Steps.astro';
-import Content from '~/components/widgets/Content.astro';
-import BlogLatestPosts from '~/components/widgets/BlogLatestPosts.astro';
-import FAQs from '~/components/widgets/FAQs.astro';
-import Stats from '~/components/widgets/Stats.astro';
-import CallToAction from '~/components/widgets/CallToAction.astro';
+/**
+ * As seções desta página são markup inline, não componentes — de propósito.
+ *
+ * Um <Hero> que recebe eyebrow, título, subtítulo, quatro parágrafos e um
+ * retrato tem interface tão complexa quanto sua implementação, e há UM ponto
+ * de chamada. Extrair seria classitis. A regra do projeto: extraia quando
+ * aparecer o segundo ponto de chamada, não antes (SPEC §8).
+ *
+ * Comprimento não é motivo para dividir. Este arquivo passa de 400 linhas e
+ * isso está previsto na SPEC.
+ */
+const pecas = await pecasPublicadas();
 
-const metadata = {
-  title: 'AstroWind — Free template for creating websites with Astro + Tailwind CSS',
-  ignoreTitleTemplate: true,
-};
+const destaques = pecas.slice(0, 3);
+const listaDensa = pecas.slice(0, 5);
+
+const comecePorAqui = [
+  {
+    n: '01',
+    titulo: 'Quero organizar meu próprio conhecimento',
+    desc: 'A série sobre PARA, GTD e Zettelkasten em três níveis — do arquivo básico ao sistema que sustenta decisão.',
+    cta: 'Ver a série',
+  },
+  {
+    n: '02',
+    titulo: 'Lidero IA na minha organização',
+    desc: 'Ensaios sobre governança, adoção e o que quebra na prática quando o piloto encontra a operação.',
+    cta: 'Ver ensaios',
+  },
+  {
+    n: '03',
+    titulo: 'Quero saber o que você pensa, em 10 minutos',
+    desc: 'O ensaio-manifesto: não existe estratégia de IA, existe estratégia de negócio.',
+    cta: 'Ler o ensaio',
+  },
+];
+
+const identidades = [
+  {
+    kicker: 'O praticante',
+    titulo: 'Quem implanta',
+    desc: 'Programa corporativo de IA em quatro frentes, time de 12 pessoas, milhares de usuários internos. O que escrevo passou por essa fricção antes.',
+    pecaTipo: 'Caso em destaque',
+    pecaTitulo: 'O comitê que destravou a adoção',
+    pecaCta: 'Ler o caso',
+  },
+  {
+    kicker: 'O autor',
+    titulo: 'Quem escreve',
+    desc: 'Ensaios, notas e padrões sobre IA, decisão e gestão do conhecimento — mais de mil notas em um sistema pessoal mantido há anos.',
+    pecaTipo: 'Ensaio em destaque',
+    pecaTitulo: 'Mil notas depois: o que o Obsidian me ensinou sobre decidir',
+    pecaCta: 'Ler o ensaio',
+  },
+];
+
+/* Conteúdo estático inline. Não existe collection de aparições nesta fatia:
+   são três itens fixos, e uma collection aqui seria um módulo raso (SPEC §5.1). */
+const aparicoes = [
+  {
+    meta: '2025 · Web Summit Rio',
+    evento: 'Web Summit Rio',
+    disse: '“Não existe estratégia de IA” apresentado a um público de fundadores: a tese e o desconforto que ela causa.',
+  },
+  {
+    meta: '2025 · Web Summit Portugal',
+    evento: 'Web Summit Portugal',
+    disse: 'Do piloto à produção — o que muda quando o usuário interno é o principal risco do projeto.',
+  },
+  {
+    meta: '2026 · Congresso SAI Brasil',
+    evento: 'Congresso SAI Brasil',
+    disse: 'Governança de IA sem burocratizar a inovação: o paralelo com checklist de voo.',
+  },
+];
 ---
 
-<Layout metadata={metadata}>
-  <!-- Hero Widget ******************* -->
+<Base>
+  {/* ============ BLOCO 1 — Hero: bio-como-hero ============ */}
+  <section class="container hero">
+    <div>
+      <p class="hero-eyebrow">IA aplicada · governança · gestão do conhecimento</p>
+      <h1 class="hero-titulo">Descomplicando a tecnologia</h1>
+      {/* REVISÃO PENDENTE: este subtítulo é o elemento mais fraco do par e está
+          em revisão com o cliente. Mantido do protótipo de propósito. */}
+      <p class="hero-subtitulo">Inteligência artificial com resultado</p>
 
-  <Hero
-    actions={[
-      {
-        variant: 'primary',
-        text: 'Get template',
-        href: 'https://github.com/onwidget/astrowind',
-        target: '_blank',
-        icon: 'tabler:download',
-      },
-      { text: 'Learn more', href: '#features' },
-    ]}
-    image={{ src: '~/assets/images/hero-image.png', alt: 'AstroWind Hero Image' }}
-  >
-    <Fragment slot="title">
-      Free template for <span class="hidden xl:inline">creating websites with</span>
-      <span class="text-accent dark:text-white highlight"> Astro 5.0</span> + Tailwind CSS
-    </Fragment>
+      <div class="hero-regua"></div>
 
-    <Fragment slot="subtitle">
-      <span class="hidden sm:inline">
-        <span class="font-semibold">AstroWind</span> is a free, customizable and production-ready template for Astro 5.0
-        + Tailwind CSS.</span
-      >
-      <span class="block mb-1 sm:hidden font-bold text-blue-600">AstroWind: Production-ready.</span>
-      Suitable for Startups, Small Business, SaaS websites, Professional Portfolios, Marketing websites, Landing Pages &
-      Blogs.
-    </Fragment>
-  </Hero>
+      <div class="hero-bio">
+        <p>
+          Lidero um programa corporativo de Inteligência Artificial — governança, plataforma,
+          aplicações e estratégia — com um time de 12 pessoas e alguns milhares de usuários
+          internos do outro lado.
+        </p>
+        <p>
+          Antes disso foram 25 anos em engenharia e transformação digital, com um mestrado no
+          meio do caminho sobre reconhecimento de padrões — o que hoje se chamaria de IA, e
+          naquela época se chamava só de pesquisa. Aprendi a diferença entre uma tecnologia que
+          funciona na demonstração e uma que sobrevive ao contato com a organização.
+        </p>
+        <p>
+          Não acredito em colocar tecnologia em pedestal. Qualquer IA, no fundo, é muito boa em
+          uma única coisa: dizer o quanto duas coisas são parecidas. Entender isso é o que separa
+          quem usa IA com critério de quem compra promessa.
+        </p>
+        <p>
+          Escrevo aqui sobre o que fica quando o hype passa: o que a IA muda de verdade no
+          trabalho de quem decide, e como organizar o próprio conhecimento para decidir melhor.
+        </p>
+      </div>
+    </div>
 
-  <!-- Note Widget ******************* -->
+    <div>
+      {/* Não há foto ainda. Placeholder, e nunca foto de banco (SPEC §5.1). */}
+      <div class="hero-retrato placeholder">retrato 4:5</div>
+      <p class="hero-retrato-nota">[retrato único — foto profissional dirigida, não stock]</p>
+    </div>
+  </section>
 
-  <Note />
+  {/* ============ BLOCO 2 — Newsletter inline ============ */}
+  <section class="faixa-newsletter">
+    <div class="container">
+      <Newsletter variante="inline" />
+    </div>
+  </section>
 
-  <!-- Features Widget *************** -->
+  {/* ============ BLOCO 3 — Comece por aqui ============ */}
+  <section class="container secao">
+    <p class="eyebrow-secao">Comece por aqui</p>
+    <h2 class="titulo-secao">Três caminhos, dependendo do que te trouxe aqui</h2>
+    <p class="intro-secao">Um caminho canônico, separado do arquivo cronológico.</p>
 
-  <Features
-    id="features"
-    tagline="Features"
-    title="What you get with AstroWind"
-    subtitle="One of the most professional and comprehensive templates currently on the market. Most starred & forked Astro theme in 2022, 2023 and 2024."
-    items={[
+    <div class="comece-grade">
       {
-        title: 'Astro + Tailwind CSS Integration',
-        description:
-          'A seamless integration between two great frameworks that offer high productivity, performance and versatility.',
-        icon: 'tabler:brand-tailwind',
-      },
-      {
-        title: 'Ready-to-use Components',
-        description:
-          'Widgets made with Tailwind CSS ready to be used in Marketing Websites, SaaS, Blogs, Personal Profiles, Small Business...',
-        icon: 'tabler:components',
-      },
-      {
-        title: 'Best Practices',
-        description:
-          'Creating secure, efficient, and user-friendly websites that deliver exceptional experiences and lasting value.',
-        icon: 'tabler:list-check',
-      },
-      {
-        title: 'Excellent Page Speed',
-        description:
-          'Having a good page speed impacts organic search ranking, improves user experience (UI/UX) and increase conversion rates.',
-        icon: 'tabler:rocket',
-      },
-      {
-        title: 'Search Engine Optimization (SEO)',
-        description:
-          "SEO lies in its ability to enhance a website's visibility, driving organic traffic and enabling it to reach a wider audience.",
-        icon: 'tabler:arrows-right-left',
-      },
-      {
-        title: 'Open to new ideas and contributions',
-        description:
-          'Embracing a culture that is open to new ideas and contributions is integral fostering innovation, collaboration, and a dynamic user experience.',
-        icon: 'tabler:bulb',
-      },
-    ]}
-  />
+        comecePorAqui.map((item) => (
+          <a class="comece-card" href="/biblioteca">
+            <span class="comece-numero">{item.n}</span>
+            <span>
+              <span class="comece-titulo">“{item.titulo}”</span>
+              <span class="comece-desc">{item.desc}</span>
+            </span>
+            <span class="comece-cta">{item.cta} →</span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
 
-  <!-- Content Widget **************** -->
+  {/* ============ BLOCO 4 — Textos recentes ============ */}
+  <section class="container secao">
+    <p class="eyebrow-secao">Publicações</p>
+    <h2 class="titulo-secao">Textos recentes</h2>
+    <p class="intro-secao">
+      Ideias sobre estratégia, adoção e governança de IA — escritas de dentro de quem está
+      implantando, não de quem só observa.
+    </p>
 
-  <Content
-    isReversed
-    tagline="Inside template"
-    title="AstroWind's Blueprint: Fun Meets Functionality!"
-    items={[
+    <div class="destaques-grade">
       {
-        title: 'Built on top of Astro 5.0',
-        description:
-          'Benefiting from the performance and developer-friendly features of this modern static site generator.',
-      },
-      {
-        title: 'Styled using Tailwind CSS',
-        description:
-          'Facilitating rapid design and consistent styling with this highly popular utility-first CSS framework.',
-      },
-      {
-        title: 'Cross-browser compatibility',
-        description:
-          'Ensure your website looks and functions consistently across various web browsers, delivering a seamless experience to all users.',
-      },
-    ]}
-    image={{
-      src: 'https://images.unsplash.com/photo-1519389950473-47ba0277781c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-      alt: 'Colorful Image',
-    }}
-  >
-    <Fragment slot="content">
-      <h3 class="text-2xl font-bold tracking-tight dark:text-white sm:text-3xl mb-2">Building on modern foundations</h3>
-      Gain a competitive advantage by incorporating industry leading practices
-    </Fragment>
+        destaques.map((peca) => (
+          <a class="destaque-card" href={`/biblioteca/${peca.id}`}>
+            <span class="destaque-capa placeholder">capa ilustrada própria · linha + aquarela</span>
+            <span class="destaque-corpo">
+              <span class="destaque-meta">
+                <Badge>{TIPOS[peca.data.tipo].rotulo}</Badge>
+                <span class="destaque-data">{formatarData(peca.data.data)}</span>
+              </span>
+              <span class="destaque-titulo">{peca.data.titulo}</span>
+              <span class="destaque-resumo">{peca.data.resumo}</span>
+              <span class="destaque-cta">Ler →</span>
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </section>
 
-    <Fragment slot="bg">
-      <div class="absolute inset-0 bg-blue-50 dark:bg-transparent"></div>
-    </Fragment>
-  </Content>
+  {/* ============ BLOCO 5 — Lista densa ============ */}
+  <section class="container secao-lista">
+    <h2 class="visualmente-oculto">Publicações recentes</h2>
+    <ul class="lista-densa">
+      {listaDensa.map((peca) => <ItemLista peca={peca} />)}
+    </ul>
+    <p class="lista-densa-rodape">
+      <a class="link-mono" href="/biblioteca">Ver toda a biblioteca →</a>
+    </p>
+  </section>
 
-  <!-- Content Widget **************** -->
+  {/* ============ BLOCO 6 — Identidades paralelas ============ */}
+  <section class="container secao">
+    <h2 class="visualmente-oculto">Identidades paralelas</h2>
+    <div class="identidades-grade">
+      {
+        identidades.map((id) => (
+          <div class="identidade">
+            <p class="identidade-kicker">{id.kicker}</p>
+            <h3 class="identidade-titulo">{id.titulo}</h3>
+            <p class="identidade-desc">{id.desc}</p>
+            <a class="identidade-card" href="/biblioteca">
+              <span class="identidade-card-kind">{id.pecaTipo}</span>
+              <span class="identidade-card-titulo">{id.pecaTitulo}</span>
+              <span class="identidade-card-cta">{id.pecaCta} →</span>
+            </a>
+          </div>
+        ))
+      }
+    </div>
+  </section>
 
-  <Content
-    isAfterContent
-    items={[
-      {
-        title: 'High level of customization',
-        description: `Tailor the template effortlessly to match your brand's identity and requirements, making your website distinct and saving you time.`,
-      },
-      {
-        title: 'Multiple layout possibilities',
-        description:
-          'Explore various layout options to find the structure that best presents your content, enhancing user engagement and navigation.',
-      },
-      {
-        title: 'Fully responsive design',
-        description:
-          "Ensure your website's optimal performance on various devices and screen sizes, providing a consistent and enjoyable user experience.",
-      },
-      {
-        title: 'Integration of media',
-        description:
-          'Seamlessly incorporate images, videos, and multimedia elements that enhance your content and engage visitors effectively.',
-      },
-    ]}
-    image={{
-      src: 'https://images.unsplash.com/photo-1600132806370-bf17e65e942f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2194&q=80',
-      alt: 'Blueprint Image',
-    }}
-  >
-    <Fragment slot="content">Ensure your online presence truly represents you.</Fragment>
+  {/* ============ BLOCO 7 — Aparições ============ */}
+  <section class="faixa-aparicoes">
+    <div class="container">
+      <p class="aparicoes-eyebrow">Aparições</p>
+      <h2 class="aparicoes-titulo">Onde eu falei, e o que eu disse lá</h2>
+      <p class="aparicoes-intro">
+        Prova por artefato: cada aparição leva à ideia que eu levei ao palco, não ao logotipo do
+        evento.
+      </p>
 
-    <Fragment slot="bg">
-      <div class="absolute inset-0 bg-blue-50 dark:bg-transparent"></div>
-    </Fragment>
-  </Content>
+      <div class="aparicoes-grade">
+        {
+          aparicoes.map((a) => (
+            <div class="aparicao">
+              <p class="aparicao-meta">{a.meta}</p>
+              <p class="aparicao-evento">{a.evento}</p>
+              <p class="aparicao-disse">{a.disse}</p>
+            </div>
+          ))
+        }
+      </div>
 
-  <!-- Content Widget **************** -->
+      {/* A página /aparicoes não existe nesta fatia, então o link fica inerte:
+          link para 404 é pior que link inerte (SPEC §5). */}
+      <p class="aparicoes-rodape">
+        <span class="aparicoes-link-inerte" aria-disabled="true">Todas as aparições →</span>
+      </p>
+    </div>
+  </section>
+</Base>
 
-  <Content
-    isReversed
-    isAfterContent
-    items={[
-      {
-        title: 'Enhanced user engagement',
-        description:
-          'Captivate your audience with interactive elements, intuitive navigation, and visually appealing layouts, encouraging longer visits.',
-      },
-      {
-        title: 'Continuous improvement',
-        description:
-          'Ensure your website stays aligned with the latest trends and technologies through regular updates and enhancements.',
-      },
-      {
-        title: 'Time and resource efficiency',
-        description:
-          'Skip the time-consuming process of building a website from scratch and launch your online presence sooner with AstroWind.',
-      },
-      {
-        title: 'Community support',
-        description: `Join the growing AstroWind community for insights, resources, and assistance, ensuring you're never alone on your web development journey.`,
-      },
-    ]}
-    image={{
-      src: 'https://images.unsplash.com/photo-1611462985358-60d3498e0364?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-      alt: 'Astronauts Image',
-    }}
-  >
-    <Fragment slot="content">Designed to foster growth and success.</Fragment>
+<style>
+  .secao {
+    padding-top: var(--space-9);
+  }
 
-    <Fragment slot="bg">
-      <div class="absolute inset-0 bg-blue-50 dark:bg-transparent"></div>
-    </Fragment>
-  </Content>
+  .secao-lista {
+    padding-top: var(--space-7);
+  }
 
-  <!-- Steps Widget ****************** -->
+  /* ============ Hero ============ */
 
-  <Steps
-    title="Get your dream website up and running in no time with AstroWind."
-    items={[
-      {
-        title: 'Step 1: <span class="font-medium">Download</span>',
-        description:
-          "Kickstart with GitHub! Either fork the AstroWind template or simply click 'Use this template'. Your canvas awaits, ready for your digital masterpiece. In just a few clicks, you've already set the foundation.",
-        icon: 'tabler:package',
-      },
-      {
-        title: 'Step 2: <span class="font-medium">Add content</span>',
-        description:
-          "Pour your vision into it. Add images, text, and all that jazz to breathe life into your digital space. Remember, it's the content that tells your story, so make it captivating.",
-        icon: 'tabler:letter-case',
-      },
-      {
-        title: 'Step 3: <span class="font-medium">Customize styles</span>',
-        description:
-          'Give it your personal touch. Tailor colors, fonts, and layouts until it feels just right. Your unique flair, amplified by AstroWind! Precision in design ensures a seamless user experience.',
-        icon: 'tabler:paint',
-      },
-      {
-        title: 'Ready!',
-        icon: 'tabler:check',
-      },
-    ]}
-    image={{
-      src: 'https://images.unsplash.com/photo-1616198814651-e71f960c3180?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=987&q=80',
-      alt: 'Steps image',
-    }}
-  />
+  .hero {
+    display: grid;
+    grid-template-columns: 1.35fr 0.65fr;
+    gap: var(--space-9);
+    align-items: start;
+    padding-top: var(--space-10);
+    padding-bottom: var(--space-9);
+  }
 
-  <!-- Features2 Widget ************** -->
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin: 0 0 var(--space-5);
+  }
 
-  <Features2
-    title="Most used widgets"
-    subtitle="Provides frequently used components for building websites using Tailwind CSS"
-    tagline="Components"
-    items={[
-      {
-        title: 'Headers',
-        description: "Ever tried driving without GPS? Boom! That's why websites need headers for direction.",
-        icon: 'flat-color-icons:template',
-      },
-      {
-        title: 'Heros',
-        description:
-          "Picture a superhero landing – epic, right? That's the job of a Hero section, making grand entrances!",
-        icon: 'flat-color-icons:gallery',
-      },
-      {
-        title: 'Features',
-        description:
-          'Where websites strut their stuff and show off superpowers. No holding back on the bragging rights here!',
-        icon: 'flat-color-icons:approval',
-      },
-      {
-        title: 'Content',
-        description:
-          "Dive into the meat and potatoes of a site; without it, you'd just be window shopping. Content is king.",
-        icon: 'flat-color-icons:document',
-      },
-      {
-        title: 'Call-to-Action',
-        description:
-          'That enthusiastic friend who\'s always urging, "Do it! Do it!"? Yeah, that\'s this button nudging you towards adventure.',
-        icon: 'flat-color-icons:advertising',
-      },
-      {
-        title: 'Pricing',
-        description: 'Behold the dessert menu of the website world. Tempting choices await, can you resist?',
-        icon: 'flat-color-icons:currency-exchange',
-      },
-      {
-        title: 'Testimonial',
-        description: 'Step into the gossip corner! Here, other visitors spill the beans and share the juicy details.',
-        icon: 'flat-color-icons:voice-presentation',
-      },
-      {
-        title: 'Contact',
-        description:
-          'Like a digital mailbox, but faster! Drop a line, ask a question, or send a virtual high-five. Ding! Message in.',
-        icon: 'flat-color-icons:business-contact',
-      },
-      {
-        title: 'Footers',
-        description: "The footer's like the credits of a movie but sprinkled with easter eggs. Time to hunt!",
-        icon: 'flat-color-icons:database',
-      },
-    ]}
-  >
-    <Fragment slot="bg">
-      <div class="absolute inset-0 bg-blue-50 dark:bg-transparent"></div>
-    </Fragment>
-  </Features2>
+  .hero-titulo {
+    font-size: clamp(2.75rem, 5.2vw, 4.5rem);
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    margin: 0;
+  }
 
-  <!-- HighlightedPosts Widget ******* -->
+  .hero-subtitulo {
+    font-family: var(--font-display);
+    font-weight: var(--fw-regular);
+    font-size: clamp(1.3125rem, 2.2vw, 1.8125rem);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: var(--text-muted);
+    margin: var(--space-4) 0 0;
+    max-width: 22ch;
+  }
 
-  <BlogLatestPosts
-    title="Find out more content in our Blog"
-    information={`The blog is used to display AstroWind documentation.
-                        Each new article will be an important step that you will need to know to be an expert in creating a website using Astro + Tailwind CSS.
-                        Astro is a very interesting technology. Thanks.
-                `}
-  />
+  .hero-regua {
+    height: 1px;
+    background: var(--border);
+    margin: var(--space-7) 0 var(--space-6);
+    max-width: 520px;
+  }
 
-  <!-- FAQs Widget ******************* -->
+  .hero-bio {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    max-width: 62ch;
+    font-size: var(--text-md);
+    line-height: 1.62;
+    color: var(--text-body);
+  }
 
-  <FAQs
-    title="Frequently Asked Questions"
-    subtitle="Dive into the following questions to gain insights into the powerful features that AstroWind offers and how it can elevate your web development journey."
-    tagline="FAQs"
-    classes={{ container: 'max-w-6xl' }}
-    items={[
-      {
-        title: 'Why AstroWind?',
-        description:
-          "Michael Knight a young loner on a crusade to champion the cause of the innocent. The helpless. The powerless in a world of criminals who operate above the law. Here he comes Here comes Speed Racer. He's a demon on wheels.",
-      },
-      {
-        title: 'What do I need to start?',
-        description:
-          'Space, the final frontier. These are the voyages of the Starship Enterprise. Its five-year mission: to explore strange new worlds. Many say exploration is part of our destiny, but it’s actually our duty to future generations.',
-      },
-      {
-        title: 'How to install the Astro + Tailwind CSS template?',
-        description:
-          "Well, the way they make shows is, they make one show. That show's called a pilot. Then they show that show to the people who make shows, and on the strength of that one show they decide if they're going to make more shows.",
-      },
-      {
-        title: "What's something that you don't understand?",
-        description:
-          "A flower in my garden, a mystery in my panties. Heart attack never stopped old Big Bear. I didn't even know we were calling him Big Bear.",
-      },
-      {
-        title: 'What is something that you would like to try again?',
-        description:
-          "A business big enough that it could be listed on the NASDAQ goes belly up. Disappears! It ceases to exist without me. No, you clearly don't know who you're talking to, so let me clue you in.",
-      },
-      {
-        title: 'If you could only ask one question to each person you meet, what would that question be?',
-        description:
-          "This is not about revenge. This is about justice. A lot of things can change in twelve years, Admiral. Well, that's certainly good to know. About four years. I got tired of hearing how young I looked.",
-      },
-    ]}
-  />
+  .hero-bio p {
+    margin: 0;
+  }
 
-  <!-- Stats Widget ****************** -->
+  .hero-retrato {
+    aspect-ratio: 4 / 5;
+    border-radius: var(--radius-lg);
+  }
 
-  <Stats
-    stats={[
-      { title: 'Downloads', amount: '132K' },
-      { title: 'Stars', amount: '24.8K' },
-      { title: 'Forks', amount: '10.3K' },
-      { title: 'Users', amount: '48.4K' },
-    ]}
-  />
+  .hero-retrato-nota {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    line-height: var(--lh-body);
+    color: var(--text-subtle);
+    margin: var(--space-3) 0 0;
+  }
 
-  <!-- CallToAction Widget *********** -->
+  /* ============ Comece por aqui ============ */
 
-  <CallToAction
-    actions={[
-      {
-        variant: 'primary',
-        text: 'Get template',
-        href: 'https://github.com/onwidget/astrowind',
-        target: '_blank',
-        icon: 'tabler:download',
-      },
-    ]}
-  >
-    <Fragment slot="title">
-      Astro&nbsp;+&nbsp;<br class="block sm:hidden" /><span class="sm:whitespace-nowrap">Tailwind CSS</span>
-    </Fragment>
+  .comece-grade {
+    display: grid;
+    gap: var(--space-4);
+  }
 
-    <Fragment slot="subtitle">
-      Be very surprised by these huge fake numbers you are seeing on this page. <br class="hidden md:inline" />Don't
-      waste more time! :P
-    </Fragment>
-  </CallToAction>
-</Layout>
+  .comece-card {
+    display: grid;
+    grid-template-columns: 56px 1fr 120px;
+    gap: var(--space-5);
+    align-items: center;
+    background: var(--surface-card);
+    border: var(--border-width) solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5) var(--space-6);
+    text-decoration: none;
+    box-shadow: var(--shadow-xs);
+    transition:
+      transform var(--dur-base) var(--ease-standard),
+      box-shadow var(--dur-base) var(--ease-standard);
+  }
+
+  .comece-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    text-decoration: none;
+  }
+
+  .comece-numero {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    /* Numeral pequeno em terracota: --text-link, não --brand (§3.4). */
+    color: var(--text-link);
+  }
+
+  .comece-titulo {
+    display: block;
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: var(--fw-medium);
+    letter-spacing: -0.015em;
+    color: var(--text-strong);
+    line-height: 1.25;
+  }
+
+  .comece-desc {
+    display: block;
+    margin-top: var(--space-2);
+    font-size: var(--text-base);
+    line-height: 1.55;
+    color: var(--text-muted);
+  }
+
+  .comece-cta {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--text-link);
+    text-align: right;
+  }
+
+  /* ============ Textos recentes ============ */
+
+  .destaques-grade {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-5);
+  }
+
+  .destaque-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface-card);
+    border: var(--border-width) solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    text-decoration: none;
+    box-shadow: var(--shadow-xs);
+    transition:
+      transform var(--dur-base) var(--ease-standard),
+      box-shadow var(--dur-base) var(--ease-standard);
+  }
+
+  .destaque-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+    text-decoration: none;
+  }
+
+  .destaque-capa {
+    aspect-ratio: 16 / 10;
+    border: none;
+    border-bottom: var(--border-width) solid var(--border);
+  }
+
+  .destaque-corpo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-5);
+    flex: 1;
+  }
+
+  .destaque-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+  }
+
+  .destaque-data {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    color: var(--text-subtle);
+  }
+
+  .destaque-titulo {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: var(--fw-medium);
+    line-height: 1.22;
+    letter-spacing: -0.015em;
+    color: var(--text-strong);
+  }
+
+  .destaque-resumo {
+    font-size: var(--text-sm);
+    line-height: 1.55;
+    color: var(--text-muted);
+  }
+
+  .destaque-cta {
+    margin-top: auto;
+    padding-top: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--text-link);
+  }
+
+  /* ============ Lista densa ============ */
+
+  .lista-densa-rodape {
+    margin: var(--space-4) 0 0;
+  }
+
+  /* ============ Identidades ============ */
+
+  .identidades-grade {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+  }
+
+  .identidade {
+    border-top: var(--border-width-strong) solid var(--brand);
+    padding-top: var(--space-5);
+  }
+
+  .identidade-kicker {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--text-link);
+    margin: 0 0 var(--space-2);
+  }
+
+  .identidade-titulo {
+    font-size: var(--text-xl);
+    margin: 0 0 var(--space-2);
+  }
+
+  .identidade-desc {
+    margin: 0 0 var(--space-5);
+    font-size: var(--text-base);
+    line-height: var(--lh-body);
+    color: var(--text-muted);
+    max-width: 52ch;
+  }
+
+  .identidade-card {
+    display: block;
+    background: var(--surface-card);
+    border: var(--border-width) solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    text-decoration: none;
+    transition: border-color var(--dur-fast) var(--ease-standard);
+  }
+
+  .identidade-card:hover {
+    border-color: var(--brand-border);
+    text-decoration: none;
+  }
+
+  .identidade-card-kind {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--text-subtle);
+    margin-bottom: var(--space-2);
+  }
+
+  .identidade-card-titulo {
+    display: block;
+    font-family: var(--font-display);
+    font-size: var(--text-md);
+    font-weight: var(--fw-medium);
+    line-height: 1.25;
+    color: var(--text-strong);
+  }
+
+  .identidade-card-cta {
+    display: block;
+    margin-top: var(--space-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    color: var(--text-link);
+  }
+
+  /* ============ Aparições ============ */
+
+  .faixa-aparicoes {
+    margin-top: var(--space-10);
+    background: var(--petrol-400);
+    border-top: var(--border-width) solid var(--petrol-500);
+    padding-block: var(--space-9);
+  }
+
+  /* FALHA CONHECIDA E DOCUMENTADA — --accent sobre --petrol-400 dá 4.35,
+     abaixo do mínimo AA de 4.5 para texto pequeno. Corrigir exige um dourado
+     mais claro (direção --gold-200), o que muda a aparência do design system:
+     é decisão do Giuliano, não da implementação. Ver SPEC §3.4.
+     O teste de contraste reporta esse par com o ratio real. Não silencie.
+     (Os hexadecimais ficam fora daqui de propósito: §7.2 proíbe valor de cor
+     em .astro, e comentário conta.) */
+  .aparicoes-eyebrow,
+  .aparicao-meta {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: var(--tracking-eyebrow);
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 var(--space-3);
+  }
+
+  .aparicoes-titulo {
+    font-size: clamp(1.75rem, 3.2vw, 2.125rem);
+    color: var(--ivory-50);
+    margin: 0 0 var(--space-2);
+  }
+
+  .aparicoes-intro {
+    margin: 0 0 var(--space-6);
+    font-size: var(--text-md);
+    line-height: var(--lh-body);
+    color: color-mix(in srgb, var(--ivory-100) 88%, transparent);
+    max-width: 64ch;
+  }
+
+  .aparicoes-grade {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: color-mix(in srgb, var(--ivory-100) 22%, transparent);
+  }
+
+  .aparicao {
+    background: var(--petrol-400);
+    padding: var(--space-5);
+  }
+
+  .aparicao-evento {
+    font-family: var(--font-display);
+    font-size: var(--text-md);
+    font-weight: var(--fw-medium);
+    line-height: 1.25;
+    color: var(--ivory-50);
+    margin: 0 0 var(--space-2);
+  }
+
+  .aparicao-disse {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: var(--lh-body);
+    color: color-mix(in srgb, var(--ivory-100) 88%, transparent);
+  }
+
+  .aparicoes-rodape {
+    margin: var(--space-6) 0 0;
+  }
+
+  .aparicoes-link-inerte {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--ivory-100) 70%, transparent);
+    cursor: default;
+  }
+
+  /* ============ Responsivo — tudo em uma coluna abaixo de 860px (§5.5) ====== */
+
+  @media (max-width: 860px) {
+    .hero,
+    .comece-card,
+    .destaques-grade,
+    .identidades-grade,
+    .aparicoes-grade {
+      grid-template-columns: 1fr;
+    }
+
+    .hero {
+      gap: var(--space-7);
+      padding-top: var(--space-7);
+    }
+
+    .comece-card {
+      gap: var(--space-2);
+    }
+
+    .comece-cta {
+      text-align: left;
+    }
+  }
+</style>

@@ -1,37 +1,21 @@
-import { getRssString } from '@astrojs/rss';
+import rss from '@astrojs/rss';
+import { pecasPublicadas } from '../lib/biblioteca';
+import { SITE_TITULO, SITE_DESCRICAO, SITE_URL } from '../config';
 
-import { SITE, METADATA, APP_BLOG } from 'astrowind:config';
-import { fetchPosts } from '~/utils/blog';
-import { getPermalink } from '~/utils/permalinks';
+/** Um <item> por peça não-rascunho. Rascunho não entra (SPEC §7.4). */
+export async function GET() {
+  const pecas = await pecasPublicadas();
 
-export const GET = async () => {
-  if (!APP_BLOG.isEnabled) {
-    return new Response(null, {
-      status: 404,
-      statusText: 'Not found',
-    });
-  }
-
-  const posts = await fetchPosts();
-
-  const rss = await getRssString({
-    title: `${SITE.name}’s Blog`,
-    description: METADATA?.description || '',
-    site: import.meta.env.SITE,
-
-    items: posts.map((post) => ({
-      link: getPermalink(post.permalink, 'post'),
-      title: post.title,
-      description: post.excerpt,
-      pubDate: post.publishDate,
+  return rss({
+    title: SITE_TITULO,
+    description: SITE_DESCRICAO,
+    site: SITE_URL,
+    items: pecas.map((peca) => ({
+      title: peca.data.titulo,
+      description: peca.data.resumo,
+      pubDate: peca.data.data,
+      link: `/biblioteca/${peca.id}/`,
     })),
-
-    trailingSlash: SITE.trailingSlash,
+    customData: '<language>pt-br</language>',
   });
-
-  return new Response(rss, {
-    headers: {
-      'Content-Type': 'application/xml',
-    },
-  });
-};
+}

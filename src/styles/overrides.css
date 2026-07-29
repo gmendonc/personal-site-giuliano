@@ -1,0 +1,127 @@
+/* ============================================================
+   Overrides locais do design system.
+
+   Os arquivos em tokens/ são cópia não editada da fonte (projeto Claude
+   Design). Todo ajuste local mora AQUI. Ver .claude/CLAUDE.md.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   1. Famílias com fallback métrico (SPEC §7.3.1)
+
+   Os tokens originais vão direto de 'Newsreader' para Georgia. Entre os dois
+   entra a família de fallback declarada em fontes.css, cujas métricas foram
+   ajustadas para ocupar a mesma caixa da fonte real — é o que impede o
+   deslocamento de layout quando o `swap` acontece.
+   ------------------------------------------------------------ */
+:root {
+  --font-display: 'Newsreader', 'Newsreader Fallback', Georgia, 'Times New Roman', serif;
+  --font-body: 'IBM Plex Sans', 'Plex Sans Fallback', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* ------------------------------------------------------------
+   2. Piso de 16px para texto de corpo no mobile (SPEC §7.3.2)
+
+   --text-sm (14px) é o tamanho de resumo de card, resumo da lista densa e
+   links do rodapé. No desktop isso é hierarquia; em 375px é texto de corpo
+   pequeno demais, e §7.3.2 mede exatamente isso.
+
+   Subir o token num lugar só resolve todos os usos de uma vez. Os rótulos em
+   mono usam --text-2xs/--text-xs e não são afetados — eles são metadado, não
+   corpo, e a régua de 16px não se aplica a eles.
+   ------------------------------------------------------------ */
+@media (max-width: 860px) {
+  :root {
+    --text-sm: 1rem;
+  }
+}
+
+/* ------------------------------------------------------------
+   3. Motion (SPEC §3.1) — nada a corrigir.
+
+   A SPEC manda redefinir --dur-fast/base/slow aqui porque tokens/motion.css
+   viria do design system com os três em 0ms. NÃO é mais o caso: o arquivo
+   buscado hoje já traz 120ms / 200ms / 340ms e já tem o bloco
+   prefers-reduced-motion que os zera. O design system foi corrigido na origem.
+
+   Redefinir os mesmos valores aqui criaria exatamente o problema que a SPEC
+   quer evitar — a mesma decisão em dois arquivos. Então o override foi
+   deliberadamente omitido. Registrado em PLAN.md, "Desvios da spec".
+
+   O que continua valendo: no resto do código, sempre var(--dur-base).
+   Nenhuma duração literal.
+   ------------------------------------------------------------ */
+
+/* ------------------------------------------------------------
+   4. Contraste (SPEC §3.4)
+
+   Três pares reprovam em WCAG AA para texto pequeno. Duas correções são
+   seguras e estão aplicadas; a terceira é decisão do Giuliano e ficou de fora
+   de propósito — o teste de acessibilidade a reporta como falha conhecida.
+   ------------------------------------------------------------ */
+
+:root {
+  /* CORREÇÃO 1 — --text-subtle #8A8378 sobre --page dava 3.36 (mínimo AA: 4.5).
+     Não há degrau na rampa graphite entre o 400 e o 500, então sobe para o 500.
+
+     CUSTO ASSUMIDO: --text-subtle e --text-muted passam a ser a mesma cor, e a
+     distinção visual entre "metadado" e "texto secundário" some. A SPEC marca
+     isso como decisão de design do Giuliano. Aplicado porque a alternativa é
+     deixar todo eyebrow, data e metadado do site reprovando em AA. Reverter
+     custa uma linha — mas exige criar um degrau intermediário na rampa. */
+  --text-subtle: var(--graphite-500); /* 5.17 sobre --page */
+}
+
+/* CORREÇÃO 2 — --brand #B8532E sobre --page dá 4.36, reprova em texto pequeno.
+   A regra: --brand fica para display grande, bordas e preenchimentos; texto
+   abaixo de 18px usa --text-link (--terracotta-600, 5.65).
+
+   Não dá para corrigir trocando o token, porque --brand está certo no uso
+   grande. A regra é aplicada no CSS de cada componente que pinta texto
+   pequeno em terracota — busque por `var(--text-link)` nos <style> das
+   páginas e componentes.
+
+   NÃO CORRIGIDO, de propósito — --accent #D9A441 sobre --petrol-400 dá 4.35.
+   Corrigir exige um dourado mais claro (direção --gold-200 #E7C57E), o que
+   muda a aparência do design system. É decisão do Giuliano. O teste em
+   §7.3.4 reporta o ratio real e falha de forma documentada. Não silencie. */
+
+/* ------------------------------------------------------------
+   5. Tema escuro (SPEC §3.2)
+
+   Fonte única da verdade para o tema escuro. O protótipo escrevia estes ~13
+   valores por JavaScript, com style.setProperty — o que colocava as cores
+   claras em CSS e as escuras em JS. Aqui o JavaScript só troca o atributo
+   data-theme no <html>; nenhum valor de cor mora em JS. Há teste para isso.
+   ------------------------------------------------------------ */
+:root[data-theme='dark'] {
+  --page: #1f1d1b;
+  --surface: #2b2926;
+  --surface-2: #3d3a35;
+  --surface-3: #524e48;
+  --surface-card: #26241f;
+  --text-strong: #f7f2e9;
+  --text-body: #e7dfd0;
+  --text-muted: #ada598;
+  --border: #3d3a35;
+  --border-strong: #524e48;
+  --accent-subtle: #2e2a20;
+  --text-link: #de8e6d;
+  --text-link-hover: #eab39b;
+
+  /* CORREÇÃO 1, no escuro — a SPEC lista --text-subtle #8A8378 aqui, que dá
+     4.48 sobre o fundo escuro: reprova por 0.02. Sobe junto com o claro, pelo
+     mesmo motivo e com o mesmo custo (colapsa em --text-muted). */
+  --text-subtle: #ada598;
+
+  /* LACUNA NA LISTA DA SPEC §3.2, encontrada pelo axe em §7.3.4.
+     A lista de 13 valores troca --text-link para um terracota CLARO (#DE8E6D)
+     mas não dá contraparte escura a --brand-subtle, que continua sendo
+     --terracotta-50 (#FBEEE8, quase branco). O Badge usa os dois juntos:
+     no tema escuro isso vira texto claro sobre fundo claro, ratio 2.25.
+
+     A SPEC já faz esse mesmo movimento para o dourado (--accent-subtle vira
+     #2E2A20); faltou fazê-lo para o terracota. Estes dois valores completam a
+     simetria — #DE8E6D sobre #2E211B dá 6.07. */
+  --brand-subtle: #2e211b;
+  --brand-border: #5e2917;
+}
